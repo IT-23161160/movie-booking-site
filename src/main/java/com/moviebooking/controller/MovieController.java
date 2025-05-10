@@ -57,7 +57,7 @@ public class MovieController {
     @PostMapping("/delete/{title}")
     public String delete(@PathVariable String title) {
         service.delete(title);
-        return "redirect:/movies";
+        return "redirect:/admin/manage-movies";
     }
 
     @PreAuthorize("hasRole('ADMIN')")
