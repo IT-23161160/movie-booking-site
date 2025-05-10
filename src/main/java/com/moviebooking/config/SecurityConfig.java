@@ -40,7 +40,7 @@ public class SecurityConfig {
                         .permitAll()
                 )
                 .logout(logout -> logout
-                        .logoutSuccessUrl("/")
+                        .logoutSuccessUrl("/movies")
                 )
                 .csrf(csrf -> csrf.disable());
 

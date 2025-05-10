@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Add New Movie</title>
+    <title>Edit Movie</title>
     <link rel="stylesheet" th:href="@{/css/globals.css}" />
     <link rel="stylesheet" th:href="@{/css/style.css}" />
     <style>
@@ -170,6 +170,17 @@
         /* File upload styling */
         .file-upload-wrapper {
             margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .current-image {
+            width: 200px;
+            height: 300px;
+            object-fit: cover;
+            margin: 0 auto 15px;
+            display: block;
+            border: 2px solid #f8ce35;
+            border-radius: 5px;
         }
 
         .file-upload-label {
@@ -183,6 +194,8 @@
             font-family: "Outfit-Light", Helvetica;
             border: 1px dashed #f8ce35;
             transition: all 0.3s ease;
+            max-width: 300px;
+            margin: 0 auto;
         }
 
         .file-upload-label:hover {
@@ -198,10 +211,9 @@
             height: 300px;
             object-fit: cover;
             margin: 15px auto;
-            display: block;
+            display: none;
             border: 2px solid #f8ce35;
             border-radius: 5px;
-            display: none;
         }
 
         .file-name {
@@ -211,6 +223,14 @@
             font-style: italic;
             color: rgba(255, 255, 255, 0.7);
         }
+
+        .image-note {
+            text-align: center;
+            font-family: "Outfit-Light", Helvetica;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 5px;
+        }
     </style>
 </head>
 
@@ -219,7 +239,7 @@
     <div class="div">
         <!-- Navbar matching your movie management page -->
         <div class="navbar">
-            <div class="navbar-title">ADD NEW MOVIE</div>
+            <div class="navbar-title">EDIT MOVIE</div>
             <div class="nav-buttons">
                 <button class="nav-button home" onclick="window.location.href='/admin';">HOME</button>
                 <form th:action="@{/logout}" method="post" style="display: inline;">
@@ -230,14 +250,19 @@
 
         <!-- Form Container -->
         <div class="form-container">
-            <h1 class="form-title">Add New Movie</h1>
+            <h1 class="form-title">Edit Movie</h1>
 
-            <form th:action="@{/movies/add}" th:object="${movie}" method="post" enctype="multipart/form-data">
-                <!-- Image Upload Section -->
+            <form th:action="@{/movies/edit}" th:object="${movie}" method="post">
+                <input type="hidden" th:field="*{imageName}" />
+
+                <!-- Current Image Display -->
                 <div class="file-upload-wrapper">
-                    <label for="imageFile" class="file-upload-label">Choose Movie Poster</label>
-                    <input type="file" id="imageFile" name="imageFile" class="file-upload-input" accept="image/*" required>
-                    <img id="imagePreview" class="image-preview" alt="Movie poster preview">
+                    <img th:src="@{'/uploads/images/' + ${movie.imageName}}" alt="Current movie poster" class="current-image">
+                    <p class="image-note">Current Poster</p>
+
+                    <label for="imageFile" class="file-upload-label">Change Movie Poster</label>
+                    <input type="file" id="imageFile" name="imageFile" class="file-upload-input" accept="image/*">
+                    <img id="imagePreview" class="image-preview" alt="New poster preview">
                     <div id="fileNameDisplay" class="file-name"></div>
                 </div>
 
@@ -268,7 +293,7 @@
 
                 <div class="form-actions">
                     <button type="button" class="btn btn-cancel" onclick="window.location.href='/admin/manage-movies';">Cancel</button>
-                    <button type="submit" class="btn btn-submit">Add Movie</button>
+                    <button type="submit" class="btn btn-submit">Update Movie</button>
                 </div>
             </form>
         </div>

@@ -50,7 +50,7 @@ public class MovieController {
     public String add(@ModelAttribute Movie movie,
                       @RequestParam("imageFile") MultipartFile imageFile) throws IOException {
         service.add(movie, imageFile);
-        return "redirect:/movies";
+        return "redirect:/admin/manage-movies";
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -72,7 +72,7 @@ public class MovieController {
     @PostMapping("/edit")
     public String update(@ModelAttribute Movie movie) {
         service.update(movie.getTitle(), movie);
-        return "redirect:/movies";
+        return "redirect:/admin/manage-movies";
     }
 }
 

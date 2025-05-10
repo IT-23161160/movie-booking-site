@@ -153,7 +153,9 @@
             <div class="navbar-title">ADMIN DASHBOARD</div>
             <div class="nav-buttons">
                 <button class="nav-button home" onclick="window.location.href='/admin';">HOME</button>
-                <button class="nav-button logout" onclick="window.location.href='/logout';">LOGOUT</button>
+                <form th:action="@{/logout}" method="post" style="display: inline;">
+                    <button type="submit" class="nav-button logout" onclick="window.location.href='/movies';">LOGOUT</button>
+                </form>
             </div>
         </div>
 
