@@ -1,12 +1,12 @@
 package com.moviebooking.controller;
 
-import com.moviebooking.model.Booking;
-import com.moviebooking.model.Movie;
+import com.moviebooking.model.*;
 import com.moviebooking.service.BookingService;
 import com.moviebooking.service.MovieService;
 import com.moviebooking.service.ShowtimeService;
 import com.moviebooking.service.TheatreService;
 import com.moviebooking.service.ScreenService;
+import com.moviebooking.util.SeatFileUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
@@ -34,6 +34,8 @@ public class BookingController {
     private ScreenService screenService;
     @Autowired
     private ShowtimeService showtimeService;
+    @Autowired
+    private SeatFileUtil seatFileUtil;
 
     @GetMapping("/select-showtime")
     public String showShowtimeSelection(@RequestParam String movieId, Model model) {
@@ -60,18 +62,26 @@ public class BookingController {
             @RequestParam String theatreId,
             @RequestParam String screenId,
             @RequestParam String showtimeId,
-            Model model,
-            @AuthenticationPrincipal User user) {
+            Model model) {
 
-        // Handle unauthenticated users
-        String userEmail = (user != null) ? user.getUsername() : "guest@example.com";
+        // Get and validate all required entities
+        Optional<Movie> movie = movieService.getById(movieId);
+        Optional<Theatre> theatre = theatreService.getById(theatreId);
+        Optional<Screen> screen = screenService.getById(screenId);
+        Optional<Showtime> showtime = showtimeService.getById(showtimeId);
 
-        model.addAttribute("movie", movieService.getById(movieId));
-        model.addAttribute("theatre", theatreService.getById(theatreId));
-        model.addAttribute("screen", screenService.getById(screenId));
-        model.addAttribute("showtime", showtimeService.getById(showtimeId));
+        if (!movie.isPresent() || !theatre.isPresent() || !screen.isPresent() || !showtime.isPresent()) {
+            return "redirect:/movies?error=invalid_selection";
+        }
+
+        // Initialize seats for this showtime if they don't exist
+        seatFileUtil.initializeSeats(showtimeId, screen.get().getTotalSeats());
+
+        model.addAttribute("movie", movie.get());
+        model.addAttribute("theater", theatre.get());
+        model.addAttribute("screen", screen.get());
+        model.addAttribute("showtime", showtime.get());
         model.addAttribute("seats", bookingService.getAvailableSeats(showtimeId));
-        model.addAttribute("userEmail", userEmail);
 
         return "bookings/select-seats";
     }
@@ -82,19 +92,38 @@ public class BookingController {
             @RequestParam String theaterId,
             @RequestParam String screenId,
             @RequestParam String showtimeId,
-            @RequestParam String userEmail,
+            @RequestParam String customerEmail,
             @RequestParam String seatNumber,
             @RequestParam String nic,
             Model model) {
 
-        Booking booking = bookingService.createBooking(movieId, theaterId, screenId, showtimeId, userEmail, seatNumber, nic);
-        model.addAttribute("booking", booking);
-        return "redirect:/bookings/confirmation/" + booking.getBookingId();
+        try {
+            Booking booking = bookingService.createBooking(
+                    showtimeId, movieId, theaterId, screenId,
+                    customerEmail, seatNumber, nic
+            );
+
+            return "redirect:/bookings/confirmation/" + booking.getBookingId();
+        } catch (IllegalStateException e) {
+            // Redirect back with error message
+            return "redirect:/bookings/select-seats?movieId=" + movieId +
+                    "&theaterId=" + theaterId + "&screenId=" + screenId +
+                    "&showtimeId=" + showtimeId + "&error=seat_taken";
+        }
     }
 
     @GetMapping("/confirmation/{bookingId}")
     public String showConfirmation(@PathVariable String bookingId, Model model) {
+        Optional<Booking> booking = bookingService.getById(bookingId);
+        Optional<Movie> movie = movieService.getById(booking.get().getMovieId());
+        Optional<Screen> screen = screenService.getById(booking.get().getScreenId());
+        Optional<Theatre> theatre = theatreService.getById(booking.get().getTheaterId());
+        Optional<Showtime> showtime = showtimeService.getById(booking.get().getShowtimeId());
         model.addAttribute("booking", bookingService.getById(bookingId).orElseThrow());
+        model.addAttribute("movie", movie.get());
+        model.addAttribute("screen", screen.get());
+        model.addAttribute("theatre", theatre.get());
+        model.addAttribute("showtime", showtime.get());
         return "bookings/confirmation";
     }
 

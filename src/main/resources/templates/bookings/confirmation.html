@@ -36,10 +36,10 @@
 
             <div class="confirmation-card">
                 <p>Booking ID: <span th:text="${booking.bookingId}"></span></p>
-                <p>Movie: <span th:text="${booking.movie.title}"></span></p>
-                <p>Theatre: <span th:text="${booking.theatre.name}"></span></p>
-                <p>Screen: <span th:text="${booking.screen.screenName}"></span></p>
-                <p>Showtime: <span th:text="${#temporals.format(booking.showtime.date, 'MMM dd') + ' ' + #temporals.format(booking.showtime.time, 'HH:mm')}"></span></p>
+                <p>Movie: <span th:text="${movie.title}"></span></p>
+                <p>Theatre: <span th:text="${theatre.name}"></span></p>
+                <p>Screen: <span th:text="${screen.screenName}"></span></p>
+                <p>Showtime: <span th:text="${#temporals.format(showtime.date, 'MMM dd') + ' ' + #temporals.format(showtime.time, 'HH:mm')}"></span></p>
                 <p>Seats: <span th:text="${booking.seatNumber}"></span></p>
             </div>
 

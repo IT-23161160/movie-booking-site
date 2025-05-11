@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class SeatFileUtil {
@@ -60,26 +61,24 @@ public class SeatFileUtil {
         return available;
     }
 
-    public void markSeatAsBooked(String showtimeId, String seat) {
-        Path seatFile = Paths.get(DATA_DIR + "seats_" + showtimeId + ".txt");
+    public synchronized void markSeatAsBooked(String showtimeId, String seat) {
+        Path seatFile = Paths.get("data/seats_" + showtimeId + ".txt");
         try {
             if (!Files.exists(seatFile)) {
-                logger.error("Seat file not found for showtime: {}", showtimeId);
+                logger.warn("Seat file not found for showtime: {}", showtimeId);
                 return;
             }
 
-            List<String> updated = new ArrayList<>();
-            for (String line : Files.readAllLines(seatFile)) {
-                String[] parts = line.split("\\|");
-                if (parts[0].equals(seat)) {
-                    updated.add(parts[0] + "|booked");
-                } else {
-                    updated.add(line);
-                }
-            }
-            Files.write(seatFile, updated, StandardOpenOption.TRUNCATE_EXISTING);
+            List<String> updated = Files.readAllLines(seatFile).stream()
+                    .map(line -> {
+                        String[] parts = line.split("\\|");
+                        return parts[0].equals(seat) ? seat + "|booked" : line;
+                    })
+                    .collect(Collectors.toList());
+
+            Files.write(seatFile, updated);
         } catch (IOException e) {
-            logger.error("Error updating seat status for showtime: " + showtimeId, e);
+            logger.error("Error updating seat status for showtime: {}", showtimeId, e);
         }
     }
 

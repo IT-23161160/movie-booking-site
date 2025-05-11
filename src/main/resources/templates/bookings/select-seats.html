@@ -14,10 +14,13 @@
             display: flex;
             justify-content: space-between;
             margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
         .movie-info, .theater-info {
             display: flex;
             align-items: center;
+            min-width: 300px;
         }
         .movie-poster-small {
             width: 60px;
@@ -25,6 +28,7 @@
             object-fit: cover;
             margin-right: 1rem;
             border-radius: 5px;
+            background-color: #2d3748;
         }
         .movie-title {
             font-weight: bold;
@@ -49,10 +53,11 @@
         }
         .seat-grid {
             display: grid;
-            grid-template-columns: repeat(8, 1fr);
+            grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
             gap: 0.5rem;
             margin: 2rem auto;
-            width: fit-content;
+            width: 100%;
+            max-width: 400px;
         }
         .seat {
             width: 40px;
@@ -63,14 +68,17 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
+            transition: all 0.2s ease;
         }
         .seat.selected {
             background: #f8ce35;
             color: black;
+            transform: scale(1.05);
         }
         .seat.booked {
             background: #e53e3e;
             cursor: not-allowed;
+            opacity: 0.7;
         }
         .confirm-btn {
             background: #f8ce35;
@@ -80,6 +88,16 @@
             border-radius: 5px;
             margin-top: 1rem;
             float: right;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .confirm-btn:hover {
+            background: #e6b800;
+            box-shadow: 0 0 10px rgba(248, 206, 53, 0.5);
+        }
+        .confirm-btn:disabled {
+            background: #6b7280;
+            cursor: not-allowed;
         }
         .selection-info {
             clear: both;
@@ -88,59 +106,95 @@
         .selection-info label {
             display: block;
             margin-bottom: 0.5rem;
+            color: #f8ce35;
         }
         .selection-info input {
             padding: 0.5rem;
             border-radius: 5px;
-            border: none;
+            border: 1px solid #4a5568;
             width: 100%;
             max-width: 300px;
             margin-bottom: 1rem;
+            background: #2d3748;
+            color: white;
+        }
+        .error-message {
+            color: #ef4444;
+            margin-top: 1rem;
+        }
+
+        .customer-info {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(0,0,0,0.2);
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
 <div class="homepage">
     <div class="div">
-        <!-- Navbar similar to your other pages -->
         <div class="booking-container">
+            <!-- Movie and Theater Info Section -->
             <div class="movie-theater-info">
                 <div class="movie-info">
-                    <img th:src="@{'/uploads/images/' + ${movie.imageName}}" class="movie-poster-small" alt="Movie poster">
+                    <img th:src="@{'/uploads/images/' + (movie.imageName)}"
+                         class="movie-poster-small"
+                         alt="Movie poster">
                     <div>
-                        <div class="movie-title" th:text="${movie.title}"></div>
-                        <div class="showtime-info" th:text="${movie.duration + ' min | ' + movie.genre}"></div>
+                        <div class="movie-title" th:text="${movie?.title ?: 'Movie'}"></div>
+                        <div class="showtime-info">
+                            <span th:text="${movie?.duration ?: '0'} + ' min'"></span>
+                            <span th:if="${movie?.genre != null}" th:text="' | ' + ${movie.genre}"></span>
+                        </div>
                     </div>
                 </div>
+
                 <div class="theater-info">
-                    <div class="theater-name" th:text="${theater.name + ' - Screen ' + screen.screenName}"></div>
-                    <div class="showtime-info" th:text="${#temporals.format(showtime.date, 'MMM dd, yyyy') + ' | ' + #temporals.format(showtime.time, 'hh:mm a')}"></div>
+                    <div>
+                        <div class="theater-name">
+                            <span th:text="${theater?.name ?: 'Theater'}"></span>
+                            <span th:text="' - Screen ' + ${screen?.screenName ?: ''}"></span>
+                        </div>
+                        <div class="showtime-info">
+                            <span th:text="${showtime?.date != null ? #temporals.format(showtime.date, 'MMM dd, yyyy') : ''}"></span>
+                            <span th:text="${showtime?.time != null ? ' | ' + #temporals.format(showtime.time, 'hh:mm a') : ''}"></span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div class="screen-display">SCREEN</div>
 
-            <form th:action="@{/bookings/confirm}" method="post" target="_blank" id="booking-form">
-                <input type="hidden" name="movieId" th:value="${movie.movieId}">
-                <input type="hidden" name="theaterId" th:value="${theater.theaterId}">
-                <input type="hidden" name="screenId" th:value="${screen.screenId}">
-                <input type="hidden" name="showtimeId" th:value="${showtime.showtimeId}">
-                <input type="hidden" name="userEmail" th:value="${userEmail}">
+            <form th:action="@{/bookings/confirm}" method="post" id="booking-form">
+                <!-- Hidden Fields -->
+                <input type="hidden" name="movieId" th:value="${movie?.movieId}">
+                <input type="hidden" name="theaterId" th:value="${theater?.theatreId}">
+                <input type="hidden" name="screenId" th:value="${screen?.screenId}">
+                <input type="hidden" name="showtimeId" th:value="${showtime?.showtimeId}">
                 <input type="hidden" name="seatNumber" id="seatNumberInput">
-                <input type="hidden" name="nic" id="nicInput">
 
-                <div class="seat-grid">
+                <!-- Seat Selection Grid -->
+                <div class="seat-grid" th:if="${seats != null and not #lists.isEmpty(seats)}">
                     <div th:each="seat : ${seats}"
-                         th:class="${#lists.contains(bookedSeats, seat) ? 'seat booked' : 'seat'}"
+                         class="seat"
                          th:text="${seat}"
-                         th:onclick="${#lists.contains(bookedSeats, seat)} ? '' : 'toggleSeat(this)'"></div>
+                         onclick="toggleSeat(this)"></div>
                 </div>
 
-                <div class="selection-info">
-                    <label for="nic">NIC Number:
-                        <input type="text" id="nic" required>
-                    </label>
-                    <p>Selected Seats: <span id="selected-seats">None</span></p>
+                <!-- Customer Information -->
+                <div class="customer-info">
+                    <div class="form-group">
+                        <label for="customerEmail">Email Address:</label>
+                        <input type="email" id="customerEmail" name="customerEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="nic">NIC/Passport Number:</label>
+                        <input type="text" id="nic" name="nic" required>
+                    </div>
+                    <div class="selection-info">
+                        <p>Selected Seats: <span id="selected-seats">None</span></p>
+                    </div>
                 </div>
 
                 <button type="submit" class="confirm-btn" id="confirm-btn" disabled>Confirm Booking</button>
@@ -171,12 +225,15 @@
         const display = document.getElementById('selected-seats');
         const confirmBtn = document.getElementById('confirm-btn');
         const seatNumberInput = document.getElementById('seatNumberInput');
-        const nicInput = document.getElementById('nicInput');
+        const emailInput = document.getElementById('customerEmail');
+        const nicInput = document.getElementById('nic');
 
-        if (selectedSeats.length > 0 && document.getElementById('nic').value.trim() !== '') {
+        if (selectedSeats.length > 0 &&
+            emailInput.value.trim() !== '' &&
+            nicInput.value.trim() !== '') {
+
             display.textContent = selectedSeats.join(', ');
             seatNumberInput.value = selectedSeats.join(',');
-            nicInput.value = document.getElementById('nic').value;
             confirmBtn.disabled = false;
         } else {
             display.textContent = 'None';
@@ -185,6 +242,8 @@
         }
     }
 
+    // Add event listeners for form validation
+    document.getElementById('customerEmail').addEventListener('input', updateSelectionDisplay);
     document.getElementById('nic').addEventListener('input', updateSelectionDisplay);
 </script>
 </body>
