@@ -220,6 +220,11 @@
         }
     </style>
     <script>
+        function handleBuyNow(button) {
+            const movieId = button.getAttribute('data-movie-id');
+            window.location.href = '/bookings/select-showtime?movieId=' + movieId;
+        }
+
         function scrollSection(section, direction) {
             const viewport = document.querySelector(`.${section} .movie-viewport`);
             const scrollAmount = viewport.offsetWidth * 0.8;
@@ -276,7 +281,7 @@
                                 <div class="movie-year" th:text="${#temporals.format(movie.releaseDate, 'yyyy')}">2025</div>
                                 <div class="movie-duration" th:text="${movie.duration + 'm'}">1h 58m</div>
                                 <div class="movie-actions">
-                                    <button class="buy-btn" th:onclick="'window.location.href=\'/buy?title=' + ${movie.title} + '\'';">BUY NOW</button>
+                                    <button class="buy-btn" th:data-movie-id="${movie.movieId}" onclick="handleBuyNow(this)">BUY NOW</button>
                                     <button class="trailer-btn" onclick="window.location.href='404.html';">TRAILER</button>
                                 </div>
                             </div>

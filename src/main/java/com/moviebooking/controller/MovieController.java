@@ -54,16 +54,16 @@ public class MovieController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/delete/{title}")
-    public String delete(@PathVariable String title) {
-        service.delete(title);
+    @PostMapping("/delete/{movieId}")
+    public String delete(@PathVariable String movieId) {
+        service.delete(movieId);
         return "redirect:/admin/manage-movies";
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/edit/{title}")
-    public String editForm(@PathVariable String title, Model model) {
-        Movie found = service.getAll().stream().filter(m -> m.getTitle().equalsIgnoreCase(title)).findFirst().orElse(null);
+    @GetMapping("/edit/{movieId}")
+    public String editForm(@PathVariable String movieId, Model model) {
+        Movie found = service.getById(movieId).orElse(null);
         model.addAttribute("movie", found);
         return "movies/edit";
     }
@@ -71,8 +71,7 @@ public class MovieController {
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/edit")
     public String update(@ModelAttribute Movie movie) {
-        service.update(movie.getTitle(), movie);
+        service.update(movie.getMovieId(), movie);
         return "redirect:/admin/manage-movies";
     }
 }
-

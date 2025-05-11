@@ -16,6 +16,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class ShowtimeRepository {
@@ -104,5 +105,12 @@ public class ShowtimeRepository {
                 s.getShowtimeId(), s.getMovieId(), s.getTheatreId(),
                 s.getScreenId(), s.getDate().format(dateFormatter), s.getTime().format(timeFormatter));
     }
+
+    public Optional<Showtime> findById(String showtimeId) {
+        return findAll().stream()
+                .filter(s -> s.getShowtimeId().equalsIgnoreCase(showtimeId))
+                .findFirst();
+    }
+
 }
 

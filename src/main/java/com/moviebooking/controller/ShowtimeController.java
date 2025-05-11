@@ -1,7 +1,10 @@
 package com.moviebooking.controller;
 
 import com.moviebooking.model.Showtime;
+import com.moviebooking.service.MovieService;
+import com.moviebooking.service.ScreenService;
 import com.moviebooking.service.ShowtimeService;
+import com.moviebooking.service.TheatreService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -14,6 +17,12 @@ public class ShowtimeController {
 
     @Autowired
     private ShowtimeService showtimeService;
+    @Autowired
+    private MovieService movieService;
+    @Autowired
+    private TheatreService theatreService;
+    @Autowired
+    private ScreenService screenService;
 
     @GetMapping
     public String list(Model model) {
@@ -25,6 +34,9 @@ public class ShowtimeController {
     @GetMapping("/add")
     public String addForm(Model model) {
         model.addAttribute("showtime", new Showtime());
+        model.addAttribute("movies", movieService.getAll());
+        model.addAttribute("theatres", theatreService.getAll());
+        model.addAttribute("screens", screenService.getAll());
         return "showtimes/add";
     }
 

@@ -3,6 +3,7 @@ package com.moviebooking.model;
 import java.time.LocalDate;
 
 public class Movie {
+    private String movieId;
     private String title;
     private String genre;
     private LocalDate releaseDate;
@@ -19,6 +20,15 @@ public class Movie {
         this.duration = duration;
         this.imageName = imageName;
         this.ticketPrice = ticketPrice;
+        this.movieId = title.substring(0, Math.min(title.length(), 6)).toUpperCase();
+    }
+
+    public String getMovieId() {
+        return movieId;
+    }
+
+    public void setMovieId(String movieId) {
+        this.movieId = movieId;
     }
 
     public String getTitle() {
@@ -27,6 +37,8 @@ public class Movie {
 
     public void setTitle(String title) {
         this.title = title;
+        // Update movieId when title changes
+        this.movieId = title.substring(0, Math.min(title.length(), 6)).toUpperCase();
     }
 
     public String getGenre() {
@@ -68,6 +80,6 @@ public class Movie {
     public void setImageName(String imageName) {
         this.imageName = imageName;
     }
+
+
 }
-
-

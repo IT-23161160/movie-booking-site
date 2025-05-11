@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class BookingRepository {
@@ -44,12 +45,28 @@ public class BookingRepository {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] p = line.split("\\|");
-                list.add(new Booking(p[0], p[1], p[2], p[3], p[4], LocalDateTime.parse(p[5], dtFormatter)));
+                list.add(new Booking(
+                        p[0],  // bookingId
+                        p[1],  // movieId
+                        p[2],  // theaterId
+                        p[3],  // screenId (new)
+                        p[4],  // showtimeId
+                        p[5],  // userEmail
+                        p[6],  // seatNumber
+                        p[7],  // nic
+                        LocalDateTime.parse(p[8], dtFormatter)  // bookingTime
+                ));
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
         return list;
+    }
+
+    public Optional<Booking> findById(String bookingId) {
+        return findAll().stream()
+                .filter(b -> b.getBookingId().equals(bookingId))
+                .findFirst();
     }
 
     public void save(Booking booking) {
@@ -75,9 +92,29 @@ public class BookingRepository {
         }
     }
 
+    public List<Booking> findByShowtime(String showtimeId) {
+        return findAll().stream()
+                .filter(b -> b.getShowtimeId().equals(showtimeId))
+                .toList();
+    }
+
+    public List<Booking> findByUserEmail(String email) {
+        return findAll().stream()
+                .filter(b -> b.getUserEmail().equalsIgnoreCase(email))
+                .toList();
+    }
+
     private String format(Booking b) {
-        return String.join("|", b.getBookingId(), b.getShowtimeId(), b.getUserEmail(),
-                b.getSeatNumber(), b.getNic(), b.getBookingTime().format(dtFormatter));
+        return String.join("|",
+                b.getBookingId(),
+                b.getMovieId(),
+                b.getTheaterId(),
+                b.getScreenId(),  // Added screenId
+                b.getShowtimeId(),
+                b.getUserEmail(),
+                b.getSeatNumber(),
+                b.getNic(),
+                b.getBookingTime().format(dtFormatter)
+        );
     }
 }
-

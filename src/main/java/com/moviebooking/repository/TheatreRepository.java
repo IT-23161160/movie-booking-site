@@ -13,6 +13,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class TheatreRepository {
@@ -97,4 +98,11 @@ public class TheatreRepository {
     private String format(Theatre t) {
         return String.join("|", t.getTheatreId(), t.getName(), t.getLocation(), String.valueOf(t.getSeatCapacity()));
     }
+
+    public Optional<Theatre> findById(String theatreId) {
+        return findAll().stream()
+                .filter(t -> t.getTheatreId().equalsIgnoreCase(theatreId))
+                .findFirst();
+    }
+
 }

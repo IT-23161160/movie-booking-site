@@ -2,6 +2,7 @@ package com.moviebooking.controller;
 
 import com.moviebooking.model.Screen;
 import com.moviebooking.service.ScreenService;
+import com.moviebooking.service.TheatreService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -14,6 +15,8 @@ public class ScreenController {
 
     @Autowired
     private ScreenService screenService;
+    @Autowired
+    private TheatreService theatreService;
 
     @GetMapping
     public String list(Model model) {
@@ -25,6 +28,7 @@ public class ScreenController {
     @GetMapping("/add")
     public String addForm(Model model) {
         model.addAttribute("screen", new Screen());
+        model.addAttribute("theatres", theatreService.getAll()); // Add theatres for dropdown
         return "screens/add";
     }
 

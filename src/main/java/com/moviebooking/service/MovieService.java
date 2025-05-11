@@ -8,8 +8,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
-// service/MovieService.java
 @Service
 public class MovieService {
 
@@ -24,12 +24,15 @@ public class MovieService {
         movieRepository.save(movie, imageFile);
     }
 
-    public void update(String title, Movie updatedMovie) {
-        movieRepository.update(title, updatedMovie);
+    public void update(String movieId, Movie updatedMovie) {
+        movieRepository.update(movieId, updatedMovie);
     }
 
-    public void delete(String title) {
-        movieRepository.delete(title);
+    public void delete(String movieId) {
+        movieRepository.delete(movieId);
+    }
+
+    public Optional<Movie> getById(String movieId) {
+        return movieRepository.findById(movieId);
     }
 }
-

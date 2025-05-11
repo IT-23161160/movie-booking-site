@@ -13,6 +13,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class ScreenRepository {
@@ -97,4 +98,11 @@ public class ScreenRepository {
                 s.getScreenName(), String.valueOf(s.getTotalSeats()),
                 String.valueOf(s.getTicketPrice()));
     }
+
+    public Optional<Screen> findById(String screenId) {
+        return findAll().stream()
+                .filter(s -> s.getScreenId().equalsIgnoreCase(screenId))
+                .findFirst();
+    }
+
 }

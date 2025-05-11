@@ -4,6 +4,9 @@ import java.time.LocalDateTime;
 
 public class Booking {
     private String bookingId;
+    private String movieId;
+    private String theaterId;
+    private String screenId;// Added field
     private String showtimeId;
     private String userEmail;
     private String seatNumber;
@@ -12,8 +15,13 @@ public class Booking {
 
     public Booking() {}
 
-    public Booking(String bookingId, String showtimeId, String userEmail, String seatNumber, String nic, LocalDateTime bookingTime) {
+    public Booking(String bookingId, String movieId, String theaterId,String screenId, String showtimeId,
+                   String userEmail, String seatNumber, String nic,
+                   LocalDateTime bookingTime) {
         this.bookingId = bookingId;
+        this.movieId = movieId;
+        this.theaterId = theaterId;
+        this.screenId = screenId;
         this.showtimeId = showtimeId;
         this.userEmail = userEmail;
         this.seatNumber = seatNumber;
@@ -21,12 +29,21 @@ public class Booking {
         this.bookingTime = bookingTime;
     }
 
+    // Getters and Setters for all fields
     public String getBookingId() {
         return bookingId;
     }
 
     public void setBookingId(String bookingId) {
         this.bookingId = bookingId;
+    }
+
+    public String getMovieId() {
+        return movieId;
+    }
+
+    public void setMovieId(String movieId) {
+        this.movieId = movieId;
     }
 
     public String getShowtimeId() {
@@ -53,6 +70,14 @@ public class Booking {
         this.seatNumber = seatNumber;
     }
 
+    public String getNic() {
+        return nic;
+    }
+
+    public void setNic(String nic) {
+        this.nic = nic;
+    }
+
     public LocalDateTime getBookingTime() {
         return bookingTime;
     }
@@ -61,12 +86,19 @@ public class Booking {
         this.bookingTime = bookingTime;
     }
 
-    public String getNic() {
-        return nic;
+    public String getTheaterId() {
+        return theaterId;
     }
 
-    public void setNic(String nic) {
-        this.nic = nic;
+    public void setTheaterId(String theaterId) {
+        this.theaterId = theaterId;
+    }
+
+    public String getScreenId() {
+        return screenId;
+    }
+
+    public void setScreenId(String screenId) {
+        this.screenId = screenId;
     }
 }
-

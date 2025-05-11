@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Select Seats</title>
+    <link rel="stylesheet" th:href="@{/css/globals.css}" />
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+    <style>
+        .booking-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            color: white;
+        }
+        .movie-theater-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+        .movie-info, .theater-info {
+            display: flex;
+            align-items: center;
+        }
+        .movie-poster-small {
+            width: 60px;
+            height: 90px;
+            object-fit: cover;
+            margin-right: 1rem;
+            border-radius: 5px;
+        }
+        .movie-title {
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        .theater-name {
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        .showtime-info {
+            color: #a0a0a0;
+            font-size: 0.9rem;
+        }
+        .screen-display {
+            background: #4b4b4b;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            border-radius: 5px;
+            margin: 2rem auto;
+            width: 80%;
+        }
+        .seat-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 0.5rem;
+            margin: 2rem auto;
+            width: fit-content;
+        }
+        .seat {
+            width: 40px;
+            height: 40px;
+            background: #4a5568;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .seat.selected {
+            background: #f8ce35;
+            color: black;
+        }
+        .seat.booked {
+            background: #e53e3e;
+            cursor: not-allowed;
+        }
+        .confirm-btn {
+            background: #f8ce35;
+            color: black;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            margin-top: 1rem;
+            float: right;
+        }
+        .selection-info {
+            clear: both;
+            padding-top: 2rem;
+        }
+        .selection-info label {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        .selection-info input {
+            padding: 0.5rem;
+            border-radius: 5px;
+            border: none;
+            width: 100%;
+            max-width: 300px;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+<div class="homepage">
+    <div class="div">
+        <!-- Navbar similar to your other pages -->
+        <div class="booking-container">
+            <div class="movie-theater-info">
+                <div class="movie-info">
+                    <img th:src="@{'/uploads/images/' + ${movie.imageName}}" class="movie-poster-small" alt="Movie poster">
+                    <div>
+                        <div class="movie-title" th:text="${movie.title}"></div>
+                        <div class="showtime-info" th:text="${movie.duration + ' min | ' + movie.genre}"></div>
+                    </div>
+                </div>
+                <div class="theater-info">
+                    <div class="theater-name" th:text="${theater.name + ' - Screen ' + screen.screenName}"></div>
+                    <div class="showtime-info" th:text="${#temporals.format(showtime.date, 'MMM dd, yyyy') + ' | ' + #temporals.format(showtime.time, 'hh:mm a')}"></div>
+                </div>
+            </div>
+
+            <div class="screen-display">SCREEN</div>
+
+            <form th:action="@{/bookings/confirm}" method="post" target="_blank" id="booking-form">
+                <input type="hidden" name="movieId" th:value="${movie.movieId}">
+                <input type="hidden" name="theaterId" th:value="${theater.theaterId}">
+                <input type="hidden" name="screenId" th:value="${screen.screenId}">
+                <input type="hidden" name="showtimeId" th:value="${showtime.showtimeId}">
+                <input type="hidden" name="userEmail" th:value="${userEmail}">
+                <input type="hidden" name="seatNumber" id="seatNumberInput">
+                <input type="hidden" name="nic" id="nicInput">
+
+                <div class="seat-grid">
+                    <div th:each="seat : ${seats}"
+                         th:class="${#lists.contains(bookedSeats, seat) ? 'seat booked' : 'seat'}"
+                         th:text="${seat}"
+                         th:onclick="${#lists.contains(bookedSeats, seat)} ? '' : 'toggleSeat(this)'"></div>
+                </div>
+
+                <div class="selection-info">
+                    <label for="nic">NIC Number:
+                        <input type="text" id="nic" required>
+                    </label>
+                    <p>Selected Seats: <span id="selected-seats">None</span></p>
+                </div>
+
+                <button type="submit" class="confirm-btn" id="confirm-btn" disabled>Confirm Booking</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    let selectedSeats = [];
+
+    function toggleSeat(element) {
+        const seat = element.textContent;
+        const index = selectedSeats.indexOf(seat);
+
+        if (index === -1) {
+            selectedSeats.push(seat);
+            element.classList.add('selected');
+        } else {
+            selectedSeats.splice(index, 1);
+            element.classList.remove('selected');
+        }
+
+        updateSelectionDisplay();
+    }
+
+    function updateSelectionDisplay() {
+        const display = document.getElementById('selected-seats');
+        const confirmBtn = document.getElementById('confirm-btn');
+        const seatNumberInput = document.getElementById('seatNumberInput');
+        const nicInput = document.getElementById('nicInput');
+
+        if (selectedSeats.length > 0 && document.getElementById('nic').value.trim() !== '') {
+            display.textContent = selectedSeats.join(', ');
+            seatNumberInput.value = selectedSeats.join(',');
+            nicInput.value = document.getElementById('nic').value;
+            confirmBtn.disabled = false;
+        } else {
+            display.textContent = 'None';
+            seatNumberInput.value = '';
+            confirmBtn.disabled = true;
+        }
+    }
+
+    document.getElementById('nic').addEventListener('input', updateSelectionDisplay);
+</script>
+</body>
+</html>
