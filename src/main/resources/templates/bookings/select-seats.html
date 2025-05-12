@@ -304,14 +304,6 @@
 
                 <!-- Customer Information -->
                 <div class="customer-info">
-                    <div class="form-group">
-                        <label for="customerEmail">Email Address:</label>
-                        <input type="email" id="customerEmail" name="customerEmail" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="nic">NIC/Passport Number:</label>
-                        <input type="text" id="nic" name="nic" required>
-                    </div>
                     <div class="selection-info">
                         <p>Selected Seats: <span id="selected-seats">None</span></p>
                         <p>Total Price: <span id="total-price">0.00</span></p>
@@ -350,23 +342,18 @@
         const totalPriceDisplay = document.getElementById('total-price');
         const confirmBtn = document.getElementById('confirm-btn');
         const seatNumberInput = document.getElementById('seatNumberInput');
-        const emailInput = document.getElementById('customerEmail');
-        const nicInput = document.getElementById('nic');
 
         if (selectedSeats.length > 0) {
             display.textContent = selectedSeats.join(', ');
             seatNumberInput.value = selectedSeats.join(',');
             totalPriceDisplay.textContent = (selectedSeats.length * ticketPrice).toFixed(2);
+            confirmBtn.disabled = false;
         } else {
             display.textContent = 'None';
             seatNumberInput.value = '';
             totalPriceDisplay.textContent = '0.00';
+            confirmBtn.disabled = true;
         }
-
-        // Enable confirm button only if seats are selected and form is valid
-        confirmBtn.disabled = !(selectedSeats.length > 0 &&
-            emailInput.value.trim() !== '' &&
-            nicInput.value.trim() !== '');
     }
 
     // Add event listeners for form validation

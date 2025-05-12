@@ -4,19 +4,55 @@ import java.time.LocalDateTime;
 
 public class Payment {
     private String paymentId;
+    private String userName;
     private String userEmail;
+    private String phone;
     private String bookingId;
     private double amount;
+    private String cardNumber; // Last 4 digits
+    private String cardType; // Visa, MasterCard, etc.
     private LocalDateTime paymentTime;
+    private String status; // SUCCESS, FAILED
 
     public Payment() {}
 
-    public Payment(String paymentId, String userEmail, String bookingId, double amount, LocalDateTime paymentTime) {
+    public Payment(String paymentId, String userName, String userEmail, String phone,
+                   String bookingId, double amount, String cardNumber, String cardType,
+                   LocalDateTime paymentTime, String status) {
         this.paymentId = paymentId;
+        this.userName = userName;
         this.userEmail = userEmail;
+        this.phone = phone;
         this.bookingId = bookingId;
         this.amount = amount;
+        this.cardNumber = cardNumber;
+        this.cardType = cardType;
         this.paymentTime = paymentTime;
+        this.status = status;
+    }
+
+    public String getCardNumber() {
+        return cardNumber;
+    }
+
+    public void setCardNumber(String cardNumber) {
+        this.cardNumber = cardNumber;
+    }
+
+    public String getCardType() {
+        return cardType;
+    }
+
+    public void setCardType(String cardType) {
+        this.cardType = cardType;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public String getPaymentId() {
@@ -27,12 +63,28 @@ public class Payment {
         this.paymentId = paymentId;
     }
 
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
     public String getUserEmail() {
         return userEmail;
     }
 
     public void setUserEmail(String userEmail) {
         this.userEmail = userEmail;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     public String getBookingId() {
@@ -59,4 +111,3 @@ public class Payment {
         this.paymentTime = paymentTime;
     }
 }
-

@@ -15,18 +15,29 @@ public class PaymentService {
     @Autowired
     private PaymentRepository paymentRepository;
 
-    public void pay(String userEmail, String bookingId, double amount) {
-        String id = UUID.randomUUID().toString().substring(0, 6);
-        Payment payment = new Payment(id, userEmail, bookingId, amount, LocalDateTime.now());
+    public Payment processPayment(String userName, String userEmail, String phone,
+                                  String bookingId, double amount,
+                                  String cardNumber, String cardType) {
+        String paymentId = UUID.randomUUID().toString().substring(0, 8);
+        Payment payment = new Payment(
+                paymentId, userName, userEmail, phone,
+                bookingId, amount,
+                cardNumber.substring(cardNumber.length() - 4), // Store only last 4 digits
+                cardType,
+                LocalDateTime.now(),
+                "SUCCESS"
+        );
+
         paymentRepository.save(payment);
+        return payment;
     }
 
-    public List<Payment> getAll() {
+    public List<Payment> getAllPayments() {
         return paymentRepository.findAll();
     }
 
-    public List<Payment> getByUser(String email) {
-        return getAll().stream()
+    public List<Payment> getPaymentsByUser(String email) {
+        return paymentRepository.findAll().stream()
                 .filter(p -> p.getUserEmail().equalsIgnoreCase(email))
                 .toList();
     }

@@ -188,20 +188,23 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Theatre</label>
-                        <select th:field="*{theatreId}" class="form-control" required>
+                        <select id="theatreSelect" th:field="*{theatreId}" class="form-control" required>
                             <option value="">Select Theatre</option>
                             <option th:each="theatre : ${theatres}"
                                     th:value="${theatre.theatreId}"
-                                    th:text="${theatre.name}"></option>
+                                    th:text="${theatre.name}"
+                                    th:attr="data-theatre-id=${theatre.theatreId}"></option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Screen</label>
-                        <select th:field="*{screenId}" class="form-control" required>
+                        <select id="screenSelect" th:field="*{screenId}" class="form-control" required disabled>
                             <option value="">Select Screen</option>
                             <option th:each="screen : ${screens}"
                                     th:value="${screen.screenId}"
-                                    th:text="${screen.screenName + ' (' + screen.totalSeats + ' seats)'}"></option>
+                                    th:text="${screen.screenName + ' (' + screen.totalSeats + ' seats)'}"
+                                    th:attr="data-theatre-id=${screen.theatreId}"
+                                    style="display:none;"></option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -218,5 +221,50 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const theatreSelect = document.getElementById('theatreSelect');
+        const screenSelect = document.getElementById('screenSelect');
+
+        // Store all screen options for filtering
+        const allScreenOptions = Array.from(screenSelect.querySelectorAll('option[data-theatre-id]'));
+
+        theatreSelect.addEventListener('change', function() {
+            const selectedTheatreId = this.value;
+
+            // Reset and disable screen select if no theatre selected
+            if (!selectedTheatreId) {
+                screenSelect.value = '';
+                screenSelect.disabled = true;
+                return;
+            }
+
+            // Filter screens for the selected theatre
+            const filteredScreens = allScreenOptions.filter(option => {
+                return option.getAttribute('data-theatre-id') === selectedTheatreId;
+            });
+
+            // Hide all screens first
+            allScreenOptions.forEach(option => {
+                option.style.display = 'none';
+                option.selected = false;
+            });
+
+            // Show only screens for selected theatre
+            filteredScreens.forEach(option => {
+                option.style.display = '';
+            });
+
+            // Enable screen select and select first option if available
+            screenSelect.disabled = false;
+            if (filteredScreens.length > 0) {
+                filteredScreens[0].selected = true;
+            } else {
+                screenSelect.value = '';
+            }
+        });
+    });
+</script>
 </body>
 </html>

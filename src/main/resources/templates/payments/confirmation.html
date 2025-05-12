@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Payment Confirmation</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container">
+    <h1>Payment Successful</h1>
+
+    <div class="payment-info">
+        <p>Payment ID: <span th:text="${payment.paymentId}"></span></p>
+        <p>Amount: $<span th:text="${#numbers.formatDecimal(payment.amount, 1, 2)}"></span></p>
+        <p>Card: <span th:text="${payment.cardType}"></span> ending in <span th:text="${payment.cardNumber}"></span></p>
+        <p>Date: <span th:text="${#temporals.format(payment.paymentTime, 'MMM dd, yyyy HH:mm')}"></span></p>
+    </div>
+
+    <a th:href="@{/bookings/confirmation/} + ${payment.bookingId}" class="btn">View Booking</a>
+</div>
+</body>
+</html>

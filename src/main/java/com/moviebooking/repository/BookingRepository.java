@@ -49,12 +49,10 @@ public class BookingRepository {
                         p[0],  // bookingId
                         p[1],  // movieId
                         p[2],  // theaterId
-                        p[3],  // screenId (new)
+                        p[3],  // screenId
                         p[4],  // showtimeId
-                        p[5],  // userEmail
-                        p[6],  // seatNumber
-                        p[7],  // nic
-                        LocalDateTime.parse(p[8], dtFormatter)  // bookingTime
+                        p[5],  // seatNumber (was userEmail)
+                        LocalDateTime.parse(p[6], dtFormatter)  // bookingTime (was nic)
                 ));
             }
         } catch (IOException e) {
@@ -98,22 +96,14 @@ public class BookingRepository {
                 .toList();
     }
 
-    public List<Booking> findByUserEmail(String email) {
-        return findAll().stream()
-                .filter(b -> b.getUserEmail().equalsIgnoreCase(email))
-                .toList();
-    }
-
     private String format(Booking b) {
         return String.join("|",
                 b.getBookingId(),
                 b.getMovieId(),
                 b.getTheaterId(),
-                b.getScreenId(),  // Added screenId
+                b.getScreenId(),
                 b.getShowtimeId(),
-                b.getUserEmail(),
                 b.getSeatNumber(),
-                b.getNic(),
                 b.getBookingTime().format(dtFormatter)
         );
     }

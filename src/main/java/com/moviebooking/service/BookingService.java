@@ -37,17 +37,11 @@ public class BookingService {
         return bookingRepository.findById(bookingId);
     }
 
-    public List<Booking> getByUser(String email) {
-        return bookingRepository.findByUserEmail(email);
-    }
-
     private final Object seatLock = new Object();
 
     public Booking createBooking(String showtimeId, String movieId, String theaterId,
-                                 String screenId, String userEmail, String seatNumbers,
-                                 String nic) {
-        synchronized (seatLock) {  // Add synchronization
-            // Validate seat availability first
+                                 String screenId, String seatNumbers) {
+        synchronized (seatLock) {
             if (!areSeatsAvailable(showtimeId, seatNumbers)) {
                 throw new IllegalStateException("One or more selected seats are no longer available");
             }
@@ -57,10 +51,9 @@ public class BookingService {
 
             Booking booking = new Booking(
                     bookingId, movieId, theaterId, screenId, showtimeId,
-                    userEmail, seatNumbers, nic, now
+                    seatNumbers, now
             );
 
-            // Mark seats as booked
             Arrays.stream(seatNumbers.split(","))
                     .forEach(seat -> seatUtil.markSeatAsBooked(showtimeId, seat));
 

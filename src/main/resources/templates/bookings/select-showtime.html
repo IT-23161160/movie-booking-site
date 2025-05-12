@@ -222,19 +222,6 @@
             transform: scale(1.1);
             box-shadow: 0 0 20px rgba(248, 206, 53, 0.7);
         }
-
-        /* Hidden sections */
-        .hidden-section {
-            display: none;
-        }
-
-        /* Loading message */
-        .loading-message {
-            text-align: center;
-            color: #aaa;
-            font-style: italic;
-            padding: 20px;
-        }
     </style>
 </head>
 <body>
@@ -275,182 +262,79 @@
                     <input type="radio" th:id="${'theatre-' + theatre.theatreId}"
                            name="theatreId" th:value="${theatre.theatreId}"
                            class="option-input" required
-                           onclick="handleTheatreSelection(this.value)">
+                           th:checked="${selectedTheatreId != null && selectedTheatreId == theatre.theatreId}"
+                           th:attr="data-movie-id=${movie.movieId},data-theatre-id=${theatre.theatreId}">
                     <label th:for="${'theatre-' + theatre.theatreId}" class="option-label"
                            th:text="${theatre.name}">Theatre Name</label>
                 </div>
             </div>
-            <div id="theatre-error" class="error-message"></div>
         </div>
 
-        <!-- Screen Selection - Initially hidden -->
-        <div class="selection-card hidden-section" id="screen-section">
+        <!-- Screen Selection -->
+        <div class="selection-card" th:if="${selectedTheatreId != null}">
             <h2 class="section-title">2. Select Screen</h2>
-            <div class="option-grid" id="screen-options">
-                <div class="loading-message">Select a theatre to see available screens</div>
+            <div class="option-grid">
+                <div th:each="screen : ${screens}" th:if="${screen.theatreId == selectedTheatreId}" class="option-item">
+                    <input type="radio" th:id="${'screen-' + screen.screenId}"
+                           name="screenId" th:value="${screen.screenId}"
+                           class="option-input" required
+                           th:checked="${selectedScreenId != null && selectedScreenId == screen.screenId}"
+                           th:attr="data-movie-id=${movie.movieId},data-theatre-id=${selectedTheatreId},data-screen-id=${screen.screenId}">
+                    <label th:for="${'screen-' + screen.screenId}" class="option-label"
+                           th:text="${screen.screenName}">Screen Name</label>
+                </div>
             </div>
-            <div id="screen-error" class="error-message"></div>
         </div>
 
-        <!-- Showtime Selection - Initially hidden -->
-        <div class="selection-card hidden-section" id="showtime-section">
+        <!-- Showtime Selection -->
+        <div class="selection-card" th:if="${selectedScreenId != null}">
             <h2 class="section-title">3. Select Showtime</h2>
-            <div class="option-grid" id="showtime-options">
-                <div class="loading-message">Select a screen to see available showtimes</div>
+            <div class="option-grid">
+                <div th:each="showtime : ${showtimes}"
+                     th:if="${showtime.theatreId == selectedTheatreId && showtime.screenId == selectedScreenId && showtime.movieId == movie.movieId}"
+                     class="option-item">
+                    <input type="radio" th:id="${'showtime-' + showtime.showtimeId}"
+                           name="showtimeId" th:value="${showtime.showtimeId}"
+                           class="option-input" required>
+                    <label th:for="${'showtime-' + showtime.showtimeId}" class="option-label showtime-label">
+                        <span class="showtime-date" th:text="${#temporals.format(showtime.date, 'MMM dd')}">Jan 01</span>
+                        <span class="showtime-time" th:text="${#temporals.format(showtime.time, 'hh:mm a')}">10:00 AM</span>
+                    </label>
+                </div>
             </div>
-            <div id="showtime-error" class="error-message"></div>
         </div>
 
         <div style="clear: both;"></div>
-        <button type="submit" class="next-btn hidden-section" id="next-btn">Select Seats</button>
+        <button type="submit" class="next-btn" th:if="${selectedScreenId != null}">Select Seats</button>
     </form>
 </div>
 
 <!-- Admin Button -->
 <a href="/admin" class="admin-button">⚙️</a>
 
-<script th:inline="javascript">
-    /*<![CDATA[*/
-    // Store all data from server
-    const allData = {
-        screens: /*[[${screensJson}]]*/ [],
-        showtimes: /*[[${showtimesJson}]]*/ [],
-        movieId: /*[[${movie.movieId}]]*/ ''
-    };
-    /*]]>*/
-
-    function handleTheatreSelection(theatreId) {
-        // Show loading state
-        document.getElementById('screen-options').innerHTML = '<div class="loading-message">Loading screens...</div>';
-
-        // Show screen section
-        document.getElementById('screen-section').classList.remove('hidden-section');
-
-        // Hide showtime section and next button
-        document.getElementById('showtime-section').classList.add('hidden-section');
-        document.getElementById('next-btn').classList.add('hidden-section');
-
-        // Filter screens for selected theatre
-        const screensForTheatre = allData.screens.filter(screen => screen.theatreId === theatreId);
-
-        // Populate screen options
-        const screenOptions = document.getElementById('screen-options');
-        screenOptions.innerHTML = '';
-
-        if (screensForTheatre.length === 0) {
-            screenOptions.innerHTML = '<div class="loading-message">No screens available for this theatre</div>';
-            return;
-        }
-
-        screensForTheatre.forEach(screen => {
-            const optionItem = document.createElement('div');
-            optionItem.className = 'option-item';
-            optionItem.innerHTML = `
-                <input type="radio" id="screen-${screen.screenId}"
-                       name="screenId" value="${screen.screenId}"
-                       class="option-input" required
-                       onclick="handleScreenSelection(this.value)">
-                <label for="screen-${screen.screenId}" class="option-label">
-                    ${screen.screenName}
-                </label>
-            `;
-            screenOptions.appendChild(optionItem);
-        });
-    }
-
-    function handleScreenSelection(screenId) {
-        // Show loading state
-        document.getElementById('showtime-options').innerHTML = '<div class="loading-message">Loading showtimes...</div>';
-
-        // Show showtime section
-        document.getElementById('showtime-section').classList.remove('hidden-section');
-
-        // Get selected theatre
-        const theatreId = document.querySelector('input[name="theatreId"]:checked').value;
-
-        // Filter showtimes for selected theatre, screen and movie
-        const showtimesForSelection = allData.showtimes.filter(showtime =>
-            showtime.theatreId === theatreId &&
-            showtime.screenId === screenId &&
-            showtime.movieId === allData.movieId
-        );
-
-        // Populate showtime options
-        const showtimeOptions = document.getElementById('showtime-options');
-        showtimeOptions.innerHTML = '';
-
-        if (showtimesForSelection.length === 0) {
-            showtimeOptions.innerHTML = '<div class="loading-message">No showtimes available for this screen</div>';
-            document.getElementById('showtime-error').textContent = '';
-            return;
-        }
-
-        showtimesForSelection.forEach(showtime => {
-            const optionItem = document.createElement('div');
-            optionItem.className = 'option-item';
-
-            // Format date and time
-            const date = new Date(showtime.date);
-            const timeParts = showtime.time.split(':');
-            const hours = parseInt(timeParts[0]);
-            const minutes = timeParts[1];
-            const ampm = hours >= 12 ? 'PM' : 'AM';
-            const hours12 = hours % 12 || 12;
-            const formattedTime = `${hours12}:${minutes} ${ampm}`;
-
-            optionItem.innerHTML = `
-                <input type="radio" id="showtime-${showtime.showtimeId}"
-                       name="showtimeId" value="${showtime.showtimeId}"
-                       class="option-input" required
-                       onchange="enableNextButton()">
-                <label for="showtime-${showtime.showtimeId}" class="option-label showtime-label">
-                    <span class="showtime-date">${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                    <span class="showtime-time">${formattedTime}</span>
-                </label>
-            `;
-            showtimeOptions.appendChild(optionItem);
-        });
-    }
-
-    function enableNextButton() {
-        document.getElementById('next-btn').classList.remove('hidden-section');
-    }
-
+<script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Form validation
-        const form = document.getElementById('showtime-form');
-        const nextBtn = document.getElementById('next-btn');
+        // Handle theatre selection
+        document.querySelectorAll('input[name="theatreId"]').forEach(radio => {
+            radio.addEventListener('click', function() {
+                const url = new URL(window.location.href);
+                url.searchParams.set('movieId', this.dataset.movieId);
+                url.searchParams.set('theatreId', this.dataset.theatreId);
+                // Remove screenId if it exists
+                url.searchParams.delete('screenId');
+                window.location.href = url.toString();
+            });
+        });
 
-        form.addEventListener('submit', function(e) {
-            let isValid = true;
-
-            // Validate theatre selection
-            if (!form.querySelector('input[name="theatreId"]:checked')) {
-                document.getElementById('theatre-error').textContent = 'Please select a theatre';
-                isValid = false;
-            } else {
-                document.getElementById('theatre-error').textContent = '';
-            }
-
-            // Validate screen selection
-            if (!form.querySelector('input[name="screenId"]:checked')) {
-                document.getElementById('screen-error').textContent = 'Please select a screen';
-                isValid = false;
-            } else {
-                document.getElementById('screen-error').textContent = '';
-            }
-
-            // Validate showtime selection
-            if (!form.querySelector('input[name="showtimeId"]:checked')) {
-                document.getElementById('showtime-error').textContent = 'Please select a showtime';
-                isValid = false;
-            } else {
-                document.getElementById('showtime-error').textContent = '';
-            }
-
-            if (!isValid) {
-                e.preventDefault();
-            }
+        // Handle screen selection
+        document.querySelectorAll('input[name="screenId"]').forEach(radio => {
+            radio.addEventListener('click', function() {
+                const url = new URL(window.location.href);
+                url.searchParams.set('movieId', this.dataset.movieId);
+                url.searchParams.set('theatreId', this.dataset.theatreId);
+                url.searchParams.set('screenId', this.dataset.screenId);
+                window.location.href = url.toString();
+            });
         });
     });
 </script>

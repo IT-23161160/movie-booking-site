@@ -1,9 +1,5 @@
 package com.moviebooking.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.moviebooking.model.*;
 import com.moviebooking.service.BookingService;
 import com.moviebooking.service.MovieService;
@@ -12,15 +8,12 @@ import com.moviebooking.service.TheatreService;
 import com.moviebooking.service.ScreenService;
 import com.moviebooking.util.SeatFileUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.Optional;
 
 @Controller
@@ -43,38 +36,28 @@ public class BookingController {
     private SeatFileUtil seatFileUtil;
 
     @GetMapping("/select-showtime")
-    public String showShowtimeSelection(@RequestParam String movieId, Model model) {
-        Optional<Movie> movie = movieService.getById(movieId);
+    public String showShowtimeSelection(
+            @RequestParam String movieId,
+            @RequestParam(required = false) String theatreId,
+            @RequestParam(required = false) String screenId,
+            Model model) {
 
+        Optional<Movie> movie = movieService.getById(movieId);
         if (!movie.isPresent()) {
-            logger.warn("Movie not found with ID: {}", movieId);
-            model.addAttribute("error", "Movie not found");
-            return "bookings/select-showtime";
+            return "redirect:/movies";
         }
 
-        // Get all necessary data
-        List<Theatre> theatres = theatreService.getAll();
-        List<Screen> screens = screenService.getAll();
-        List<Showtime> showtimes = showtimeService.getByMovieId(movieId);
-
-        // Add attributes to model
         model.addAttribute("movie", movie.get());
-        model.addAttribute("theatres", theatres);
+        model.addAttribute("theatres", theatreService.getAll());
 
-        // Convert collections to JSON for JavaScript processing
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            // Register JavaTimeModule for proper LocalDate/LocalTime serialization
-            mapper.registerModule(new JavaTimeModule());
-            mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        if (theatreId != null) {
+            model.addAttribute("selectedTheatreId", theatreId);
+            model.addAttribute("screens", screenService.getAll());
 
-            model.addAttribute("screensJson", mapper.writeValueAsString(screens));
-            model.addAttribute("showtimesJson", mapper.writeValueAsString(showtimes));
-        } catch (JsonProcessingException e) {
-            logger.error("Error converting to JSON", e);
-            // Fallback - template will handle empty data
-            model.addAttribute("screensJson", "[]");
-            model.addAttribute("showtimesJson", "[]");
+            if (screenId != null) {
+                model.addAttribute("selectedScreenId", screenId);
+                model.addAttribute("showtimes", showtimeService.getByMovieId(movieId));
+            }
         }
 
         return "bookings/select-showtime";
@@ -115,20 +98,17 @@ public class BookingController {
             @RequestParam String theaterId,
             @RequestParam String screenId,
             @RequestParam String showtimeId,
-            @RequestParam String customerEmail,
             @RequestParam String seatNumber,
-            @RequestParam String nic,
             Model model) {
 
         try {
             Booking booking = bookingService.createBooking(
                     showtimeId, movieId, theaterId, screenId,
-                    customerEmail, seatNumber, nic
+                    seatNumber
             );
 
-            return "redirect:/bookings/confirmation/" + booking.getBookingId();
+            return "redirect:/payments/new/" + booking.getBookingId();
         } catch (IllegalStateException e) {
-            // Redirect back with error message
             return "redirect:/bookings/select-seats?movieId=" + movieId +
                     "&theaterId=" + theaterId + "&screenId=" + screenId +
                     "&showtimeId=" + showtimeId + "&error=seat_taken";

@@ -48,24 +48,37 @@ public class PaymentRepository {
     }
 
     public List<Payment> findAll() {
-        List<Payment> list = new ArrayList<>();
+        List<Payment> payments = new ArrayList<>();
         try (BufferedReader reader = Files.newBufferedReader(paymentFile)) {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split("\\|");
-                list.add(new Payment(parts[0], parts[1], parts[2],
-                        Double.parseDouble(parts[3]),
-                        LocalDateTime.parse(parts[4], dtf)));
+                payments.add(new Payment(
+                        parts[0], parts[1], parts[2], parts[3], // paymentId, userName, userEmail, phone
+                        parts[4], Double.parseDouble(parts[5]), // bookingId, amount
+                        parts[6], parts[7], // cardNumber, cardType
+                        LocalDateTime.parse(parts[8], dtf), parts[9] // paymentTime, status
+                ));
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return list;
+        return payments;
     }
 
-    private String format(Payment p) {
-        return String.join("|", p.getPaymentId(), p.getUserEmail(), p.getBookingId(),
-                String.valueOf(p.getAmount()), p.getPaymentTime().format(dtf));
+    private String format(Payment payment) {
+        return String.join("|",
+                payment.getPaymentId(),
+                payment.getUserName(),
+                payment.getUserEmail(),
+                payment.getPhone(),
+                payment.getBookingId(),
+                String.valueOf(payment.getAmount()),
+                payment.getCardNumber(),
+                payment.getCardType(),
+                payment.getPaymentTime().format(dtf),
+                payment.getStatus()
+        );
     }
 }
 
