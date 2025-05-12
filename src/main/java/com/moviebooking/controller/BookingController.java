@@ -143,11 +143,4 @@ public class BookingController {
         model.addAttribute("showtime", showtime.get());
         return "bookings/confirmation";
     }
-
-
-    @PostMapping("/cancel/{bookingId}")
-    public String cancelBooking(@PathVariable String bookingId) {
-        bookingService.cancelBooking(bookingId);
-        return "redirect:/bookings/my";
-    }
 }
