@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Repository
 public class PaymentRepository {
@@ -53,12 +54,15 @@ public class PaymentRepository {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split("\\|");
-                payments.add(new Payment(
-                        parts[0], parts[1], parts[2], parts[3], // paymentId, userName, userEmail, phone
-                        parts[4], Double.parseDouble(parts[5]), // bookingId, amount
-                        parts[6], parts[7], // cardNumber, cardType
-                        LocalDateTime.parse(parts[8], dtf), parts[9] // paymentTime, status
-                ));
+                // Add bounds checking
+                if (parts.length >= 12) { // Ensure we have enough parts
+                    payments.add(new Payment(
+                            parts[0], parts[1], parts[2], parts[3],
+                            parts[4], Double.parseDouble(parts[5]),
+                            parts[6], parts[7], parts[8], parts[9],
+                            LocalDateTime.parse(parts[10], dtf), parts[11]
+                    ));
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -76,9 +80,16 @@ public class PaymentRepository {
                 String.valueOf(payment.getAmount()),
                 payment.getCardNumber(),
                 payment.getCardType(),
+                payment.getCardExpiry(),  // Add this
+                payment.getCardCvc(),    // Add this
                 payment.getPaymentTime().format(dtf),
                 payment.getStatus()
         );
+    }
+    public List<Payment> findByBookingId(String bookingId) {
+        return findAll().stream()
+                .filter(p -> p.getBookingId().equals(bookingId))
+                .collect(Collectors.toList());
     }
 }
 

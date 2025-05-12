@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.*;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,6 +15,7 @@ import java.util.stream.Collectors;
 public class SeatFileUtil {
     private static final Logger logger = LoggerFactory.getLogger(SeatFileUtil.class);
     private static final String DATA_DIR = "data/";
+    private static final long RESERVATION_TIMEOUT_SECONDS = 15 * 60; // 15 minutes in seconds
 
     static {
         try {
@@ -49,12 +51,44 @@ public class SeatFileUtil {
                 return available;
             }
 
-            for (String line : Files.readAllLines(seatFile)) {
+            List<String> lines = Files.readAllLines(seatFile);
+            List<String> updatedLines = new ArrayList<>();
+            boolean needsUpdate = false;
+
+            for (String line : lines) {
                 String[] parts = line.split("\\|");
-                if (parts.length > 1 && "available".equalsIgnoreCase(parts[1])) {
-                    available.add(parts[0]);
+                if (parts.length > 1) {
+                    if ("available".equalsIgnoreCase(parts[1])) {
+                        available.add(parts[0]);
+                        updatedLines.add(line);
+                    } else if (parts[1].startsWith("reserved:")) {
+                        try {
+                            long reservedTime = Long.parseLong(parts[1].split(":")[1]);
+                            long currentTime = Instant.now().getEpochSecond();
+
+                            if (currentTime - reservedTime > RESERVATION_TIMEOUT_SECONDS) {
+                                // Reservation expired
+                                available.add(parts[0]);
+                                updatedLines.add(parts[0] + "|available");
+                                needsUpdate = true;
+                            } else {
+                                updatedLines.add(line);
+                            }
+                        } catch (NumberFormatException e) {
+                            logger.warn("Invalid reservation timestamp for seat {}: {}", parts[0], parts[1]);
+                            updatedLines.add(parts[0] + "|available");
+                            needsUpdate = true;
+                        }
+                    } else {
+                        updatedLines.add(line);
+                    }
                 }
             }
+
+            if (needsUpdate) {
+                Files.write(seatFile, updatedLines, StandardOpenOption.TRUNCATE_EXISTING);
+            }
+
         } catch (IOException e) {
             logger.error("Error reading seat file for showtime: " + showtimeId, e);
         }
@@ -62,7 +96,19 @@ public class SeatFileUtil {
     }
 
     public synchronized void markSeatAsBooked(String showtimeId, String seat) {
-        Path seatFile = Paths.get("data/seats_" + showtimeId + ".txt");
+        updateSeatStatus(showtimeId, seat, "booked");
+    }
+
+    public synchronized void markSeatAsReserved(String showtimeId, String seat) {
+        updateSeatStatus(showtimeId, seat, "reserved:" + Instant.now().getEpochSecond());
+    }
+
+    public synchronized void markSeatAsAvailable(String showtimeId, String seat) {
+        updateSeatStatus(showtimeId, seat, "available");
+    }
+
+    private void updateSeatStatus(String showtimeId, String seat, String status) {
+        Path seatFile = Paths.get(DATA_DIR + "seats_" + showtimeId + ".txt");
         try {
             if (!Files.exists(seatFile)) {
                 logger.warn("Seat file not found for showtime: {}", showtimeId);
@@ -72,11 +118,11 @@ public class SeatFileUtil {
             List<String> updated = Files.readAllLines(seatFile).stream()
                     .map(line -> {
                         String[] parts = line.split("\\|");
-                        return parts[0].equals(seat) ? seat + "|booked" : line;
+                        return parts[0].equals(seat) ? seat + "|" + status : line;
                     })
                     .collect(Collectors.toList());
 
-            Files.write(seatFile, updated);
+            Files.write(seatFile, updated, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
             logger.error("Error updating seat status for showtime: {}", showtimeId, e);
         }
@@ -99,5 +145,35 @@ public class SeatFileUtil {
             logger.error("Error reading all seats for showtime: " + showtimeId, e);
         }
         return allSeats;
+    }
+
+    public List<String> getBookedSeats(String showtimeId) {
+        return getSeatsByStatus(showtimeId, "booked");
+    }
+
+    public List<String> getReservedSeats(String showtimeId) {
+        return getSeatsByStatus(showtimeId, "reserved");
+    }
+
+    private List<String> getSeatsByStatus(String showtimeId, String statusPrefix) {
+        Path seatFile = Paths.get(DATA_DIR + "seats_" + showtimeId + ".txt");
+        List<String> seats = new ArrayList<>();
+
+        try {
+            if (!Files.exists(seatFile)) {
+                logger.warn("Seat file not found for showtime: {}", showtimeId);
+                return seats;
+            }
+
+            for (String line : Files.readAllLines(seatFile)) {
+                String[] parts = line.split("\\|");
+                if (parts.length > 1 && parts[1].startsWith(statusPrefix)) {
+                    seats.add(parts[0]);
+                }
+            }
+        } catch (IOException e) {
+            logger.error("Error reading {} seats for showtime: {}", statusPrefix, showtimeId, e);
+        }
+        return seats;
     }
 }

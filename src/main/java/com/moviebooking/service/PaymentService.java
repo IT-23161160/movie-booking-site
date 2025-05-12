@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -17,13 +18,16 @@ public class PaymentService {
 
     public Payment processPayment(String userName, String userEmail, String phone,
                                   String bookingId, double amount,
-                                  String cardNumber, String cardType) {
+                                  String cardNumber, String cardType,
+                                  String cardExpiry, String cardCvc) {  // Add new parameters
         String paymentId = UUID.randomUUID().toString().substring(0, 8);
         Payment payment = new Payment(
                 paymentId, userName, userEmail, phone,
                 bookingId, amount,
                 cardNumber.substring(cardNumber.length() - 4), // Store only last 4 digits
                 cardType,
+                cardExpiry,      // Add this
+                cardCvc,         // Add this
                 LocalDateTime.now(),
                 "SUCCESS"
         );
@@ -40,6 +44,11 @@ public class PaymentService {
         return paymentRepository.findAll().stream()
                 .filter(p -> p.getUserEmail().equalsIgnoreCase(email))
                 .toList();
+    }
+
+    public Optional<Payment> getPaymentByBookingId(String bookingId) {
+        List<Payment> payments = paymentRepository.findByBookingId(bookingId);
+        return payments.isEmpty() ? Optional.empty() : Optional.of(payments.get(0));
     }
 }
 

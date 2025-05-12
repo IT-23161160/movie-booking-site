@@ -102,17 +102,31 @@ public class BookingController {
             Model model) {
 
         try {
-            Booking booking = bookingService.createBooking(
+            // First check if seats are still available
+            if (!bookingService.areSeatsAvailable(showtimeId, seatNumber)) {
+                return buildRedirectUrl(movieId, theaterId, screenId, showtimeId, "seat_taken");
+            }
+
+            Booking booking = bookingService.reserveSeats(
                     showtimeId, movieId, theaterId, screenId,
                     seatNumber
             );
 
             return "redirect:/payments/new/" + booking.getBookingId();
-        } catch (IllegalStateException e) {
-            return "redirect:/bookings/select-seats?movieId=" + movieId +
-                    "&theaterId=" + theaterId + "&screenId=" + screenId +
-                    "&showtimeId=" + showtimeId + "&error=seat_taken";
+        } catch (Exception e) {
+            logger.error("Error creating booking", e);
+            return buildRedirectUrl(movieId, theaterId, screenId, showtimeId, "booking_failed");
         }
+    }
+
+    private String buildRedirectUrl(String movieId, String theaterId, String screenId,
+                                    String showtimeId, String error) {
+        return "redirect:/bookings/select-seats?" +
+                "movieId=" + movieId +
+                "&theaterId=" + theaterId +
+                "&screenId=" + screenId +
+                "&showtimeId=" + showtimeId +
+                (error != null ? "&error=" + error : "");
     }
 
     @GetMapping("/confirmation/{bookingId}")

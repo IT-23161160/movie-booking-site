@@ -1,5 +1,6 @@
 package com.moviebooking.repository;
 
+import com.moviebooking.controller.BookingController;
 import com.moviebooking.model.Booking;
 import org.springframework.stereotype.Repository;
 
@@ -13,16 +14,20 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Repository
 public class BookingRepository {
+    private static final Logger logger = LoggerFactory.getLogger(BookingController.class);
 
     private final String filePath = "data/bookings.txt";
     private final Path bookingFile = Paths.get(filePath);
-    private final DateTimeFormatter dtFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    private final DateTimeFormatter dtFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     public BookingRepository() {
         ensureFileExists();
@@ -45,18 +50,28 @@ public class BookingRepository {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] p = line.split("\\|");
-                list.add(new Booking(
-                        p[0],  // bookingId
-                        p[1],  // movieId
-                        p[2],  // theaterId
-                        p[3],  // screenId
-                        p[4],  // showtimeId
-                        p[5],  // seatNumber (was userEmail)
-                        LocalDateTime.parse(p[6], dtFormatter)  // bookingTime (was nic)
-                ));
+                try {
+                    LocalDateTime bookingTime;
+                    try {
+                        bookingTime = LocalDateTime.parse(p[6], dtFormatter);
+                    } catch (DateTimeParseException e) {
+                        // Fallback for incomplete dates
+                        if (p[6].length() == 13) { // For "2025-05-12T19"
+                            bookingTime = LocalDateTime.parse(p[6] + ":00:00", dtFormatter);
+                        } else {
+                            bookingTime = LocalDateTime.now(); // Default to now if parsing fails
+                        }
+                    }
+
+                    list.add(new Booking(
+                            p[0], p[1], p[2], p[3], p[4], p[5], bookingTime
+                    ));
+                } catch (Exception e) {
+                    logger.error("Error parsing booking line: " + line, e);
+                }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error reading bookings file", e);
         }
         return list;
     }
@@ -104,7 +119,7 @@ public class BookingRepository {
                 b.getScreenId(),
                 b.getShowtimeId(),
                 b.getSeatNumber(),
-                b.getBookingTime().format(dtFormatter)
+                b.getBookingTime().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
         );
     }
 }

@@ -141,4 +141,40 @@ public class BookingService {
         }
         return bookedSeats;
     }
+
+    public Booking reserveSeats(String showtimeId, String movieId, String theaterId,
+                                String screenId, String seatNumbers) {
+        synchronized (seatLock) {
+            if (!areSeatsAvailable(showtimeId, seatNumbers)) {
+                throw new IllegalStateException("One or more selected seats are no longer available");
+            }
+
+            String bookingId = UUID.randomUUID().toString().substring(0, 8);
+            LocalDateTime now = LocalDateTime.now();
+
+            Booking booking = new Booking(
+                    bookingId, movieId, theaterId, screenId, showtimeId,
+                    seatNumbers, now
+            );
+
+            // Temporarily mark seats as reserved
+            Arrays.stream(seatNumbers.split(","))
+                    .forEach(seat -> seatUtil.markSeatAsReserved(showtimeId, seat));
+
+            // Save the reservation
+            bookingRepository.save(booking);
+            return booking;
+        }
+    }
+
+    public void confirmBooking(Booking booking) {
+        synchronized (seatLock) {
+            // Mark seats as booked
+            Arrays.stream(booking.getSeatNumber().split(","))
+                    .forEach(seat -> seatUtil.markSeatAsBooked(booking.getShowtimeId(), seat));
+
+            // Update booking status if needed
+            bookingRepository.save(booking);
+        }
+    }
 }

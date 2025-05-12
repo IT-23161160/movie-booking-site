@@ -51,46 +51,71 @@
             font-weight: bold;
         }
 
-        /* Movie header */
-        .movie-header {
+        /* Movie header - improved layout */
+        .movie-theater-info {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             padding: 30px 50px;
             background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.9));
             border-bottom: 1px solid #333;
+            gap: 30px;
+        }
+
+        .movie-poster-container {
+            flex-shrink: 0;
+            position: relative;
         }
 
         .movie-poster-small {
-            width: 150px;
-            height: 225px;
+            width: 180px;
+            height: 270px;
             object-fit: cover;
-            border-radius: 5px;
-            margin-right: 30px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            border-radius: 8px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+            border: 2px solid rgba(248, 206, 53, 0.3);
+            transition: transform 0.3s ease;
         }
 
-        .movie-info {
+        .movie-poster-small:hover {
+            transform: scale(1.03);
+        }
+
+        .movie-details {
             flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 270px;
         }
 
         .movie-title {
-            font-size: 28px;
+            font-size: 32px;
             color: #f8ce35;
-            margin: 0 0 10px 0;
+            margin: 0 0 15px 0;
+            font-weight: 700;
         }
 
         .movie-meta {
             display: flex;
             gap: 15px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             color: #aaa;
-            font-size: 16px;
+            font-size: 18px;
         }
 
-        .movie-description {
+        .theater-info {
+            margin-top: auto;
+        }
+
+        .theater-name {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .showtime-info {
+            font-size: 18px;
             color: #ddd;
-            line-height: 1.5;
-            max-width: 800px;
         }
 
         /* Main content container */
@@ -169,68 +194,105 @@
             opacity: 0.7;
         }
 
-        /* Customer info */
-        .customer-info {
-            margin-top: 1rem;
-            padding: 1rem;
+        /* Selection and confirm container */
+        .selection-confirm-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+            padding: 1.5rem;
             background: rgba(0,0,0,0.2);
-            border-radius: 5px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: #f8ce35;
-        }
-
-        .form-group input {
-            padding: 0.5rem;
-            border-radius: 5px;
-            border: 1px solid #4a5568;
-            width: 100%;
-            max-width: 300px;
-            background: #2d3748;
-            color: white;
-        }
-
-        /* Selection info */
         .selection-info {
-            clear: both;
-            padding-top: 1rem;
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .selection-info p {
+            margin: 0;
+            font-size: 1.1rem;
+            color: #ddd;
+        }
+
+        .selection-info span {
+            font-weight: bold;
+            color: white;
         }
 
         /* Confirm button */
         .confirm-btn {
             background: #f8ce35;
             color: black;
-            padding: 0.75rem 1.5rem;
+            padding: 0.75rem 2rem;
             border: none;
             border-radius: 5px;
-            margin-top: 1rem;
-            float: right;
             cursor: pointer;
             transition: all 0.2s ease;
             font-weight: bold;
+            font-size: 1.1rem;
+            min-width: 180px;
+            text-align: center;
         }
 
         .confirm-btn:hover {
             background: #e6b800;
-            box-shadow: 0 0 10px rgba(248, 206, 53, 0.5);
+            box-shadow: 0 0 15px rgba(248, 206, 53, 0.5);
+            transform: translateY(-2px);
         }
 
         .confirm-btn:disabled {
             background: #6b7280;
             cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
-        /* Error message */
-        .error-message {
-            color: #ef4444;
-            margin-top: 1rem;
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .movie-theater-info {
+                flex-direction: column;
+                padding: 20px;
+            }
+
+            .movie-poster-small {
+                width: 120px;
+                height: 180px;
+                margin-bottom: 20px;
+            }
+
+            .movie-details {
+                height: auto;
+            }
+
+            .seat-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+
+            .navbar {
+                padding: 15px 20px;
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .selection-confirm-container {
+                flex-direction: column;
+                gap: 1.5rem;
+                align-items: flex-start;
+            }
+
+            .selection-info {
+                flex-direction: column;
+                gap: 0.5rem;
+                align-items: flex-start;
+            }
+
+            .confirm-btn {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -240,21 +302,18 @@
         <div class="booking-container">
             <!-- Movie and Theater Info Section -->
             <div class="movie-theater-info">
-                <div class="movie-info">
-                    <img th:src="@{'/uploads/images/' + (movie.imageName)}"
+                <div class="movie-poster-container">
+                    <img th:src="@{'/uploads/images/' + ${movie.imageName}}"
                          class="movie-poster-small"
                          alt="Movie poster">
-                    <div>
-                        <div class="movie-title" th:text="${movie?.title ?: 'Movie'}"></div>
-                        <div class="movie-meta">
-                            <span th:text="${movie?.duration ?: '0'} + ' min'"></span>
-                            <span th:if="${movie?.genre != null}" th:text="' | ' + ${movie.genre}"></span>
-                        </div>
-                    </div>
                 </div>
-
-                <div class="theater-info">
-                    <div>
+                <div class="movie-details">
+                    <div class="movie-title" th:text="${movie?.title ?: 'Movie'}"></div>
+                    <div class="movie-meta">
+                        <span th:text="${movie?.duration ?: '0'} + ' min'"></span>
+                        <span th:if="${movie?.genre != null}" th:text="' | ' + ${movie.genre}"></span>
+                    </div>
+                    <div class="theater-info">
                         <div class="theater-name">
                             <span th:text="${theater?.name ?: 'Theater'}"></span>
                             <span th:text="' - Screen ' + ${screen?.screenName ?: ''}"></span>
@@ -302,15 +361,14 @@
                          th:onclick="${bookedSeats.contains(seat)} ? '' : 'toggleSeat(this)'"></div>
                 </div>
 
-                <!-- Customer Information -->
-                <div class="customer-info">
+                <!-- Selection and Confirm Section -->
+                <div class="selection-confirm-container">
                     <div class="selection-info">
                         <p>Selected Seats: <span id="selected-seats">None</span></p>
-                        <p>Total Price: <span id="total-price">0.00</span></p>
+                        <p>Total Price: $<span id="total-price">0.00</span></p>
                     </div>
+                    <button type="submit" class="confirm-btn" id="confirm-btn" disabled>Confirm Booking</button>
                 </div>
-
-                <button type="submit" class="confirm-btn" id="confirm-btn" disabled>Confirm Booking</button>
             </form>
         </div>
     </div>
@@ -355,10 +413,6 @@
             confirmBtn.disabled = true;
         }
     }
-
-    // Add event listeners for form validation
-    document.getElementById('customerEmail').addEventListener('input', updateSelectionDisplay);
-    document.getElementById('nic').addEventListener('input', updateSelectionDisplay);
 </script>
 </body>
 </html>

@@ -9,16 +9,16 @@ public class Payment {
     private String phone;
     private String bookingId;
     private double amount;
-    private String cardNumber; // Last 4 digits
+    private String cardNumber;
+    private String cardExpiry;  // MM/YY format
+    private String cardCvc; // Last 4 digits
     private String cardType; // Visa, MasterCard, etc.
     private LocalDateTime paymentTime;
     private String status; // SUCCESS, FAILED
 
     public Payment() {}
 
-    public Payment(String paymentId, String userName, String userEmail, String phone,
-                   String bookingId, double amount, String cardNumber, String cardType,
-                   LocalDateTime paymentTime, String status) {
+    public Payment(String paymentId, String userName, String userEmail, String phone, String bookingId, double amount, String cardNumber, String cardExpiry, String cardCvc, String cardType, LocalDateTime paymentTime, String status) {
         this.paymentId = paymentId;
         this.userName = userName;
         this.userEmail = userEmail;
@@ -26,6 +26,8 @@ public class Payment {
         this.bookingId = bookingId;
         this.amount = amount;
         this.cardNumber = cardNumber;
+        this.cardExpiry = cardExpiry;
+        this.cardCvc = cardCvc;
         this.cardType = cardType;
         this.paymentTime = paymentTime;
         this.status = status;
@@ -109,5 +111,21 @@ public class Payment {
 
     public void setPaymentTime(LocalDateTime paymentTime) {
         this.paymentTime = paymentTime;
+    }
+
+    public String getCardExpiry() {
+        return cardExpiry;
+    }
+
+    public void setCardExpiry(String cardExpiry) {
+        this.cardExpiry = cardExpiry;
+    }
+
+    public String getCardCvc() {
+        return cardCvc;
+    }
+
+    public void setCardCvc(String cardCvc) {
+        this.cardCvc = cardCvc;
     }
 }
