@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
 
 @Service
 public class TicketPdfService {
@@ -39,20 +38,17 @@ public class TicketPdfService {
             PdfWriter.getInstance(document, outputStream);
             document.open();
 
-            // Add title
             Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18, BaseColor.BLACK);
             Paragraph title = new Paragraph("MOVIE TICKET", titleFont);
             title.setAlignment(Element.ALIGN_CENTER);
             title.setSpacingAfter(20);
             document.add(title);
 
-            // Create table with ticket details
             PdfPTable table = new PdfPTable(2);
             table.setWidthPercentage(100);
             table.setSpacingBefore(10);
             table.setSpacingAfter(10);
 
-            // Add ticket details
             addTableRow(table, "Movie:", movie.getTitle());
             addTableRow(table, "Theater:", theatre.getLocation());
             addTableRow(table, "Screen:", screen.getScreenName());
@@ -61,14 +57,12 @@ public class TicketPdfService {
             addTableRow(table, "Seats:", booking.getSeatNumber());
             addTableRow(table, "Booking ID:", booking.getBookingId());
 
-            // Add payment details
             addTableRow(table, "Payment ID:", payment.getPaymentId());
             addTableRow(table, "Amount:", "$" + String.format("%.2f", payment.getAmount()));
             addTableRow(table, "Payment Method:", payment.getCardType() + " ****" + payment.getCardNumber());
 
             document.add(table);
 
-            // Add thank you message
             Paragraph thanks = new Paragraph("Enjoy the show!",
                     FontFactory.getFont(FontFactory.HELVETICA, 12));
             thanks.setAlignment(Element.ALIGN_CENTER);

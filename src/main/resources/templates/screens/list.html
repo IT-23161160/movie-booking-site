@@ -193,7 +193,7 @@
           <td th:text="${screen.theatreId}"></td>
           <td th:text="${screen.screenName}"></td>
           <td th:text="${screen.totalSeats}"></td>
-          <td th:text="${'$' + #numbers.formatDecimal(screen.ticketPrice, 1, 2)}"></td>
+          <td th:text="${#numbers.formatDecimal(screen.ticketPrice, 1, 2)+ ' Lkr'}"></td>
           <td>
             <a th:href="@{/screens/edit/{id}(id=${screen.screenId})}" class="action-btn btn-edit">Edit</a>
             <form th:action="@{/screens/delete/{id}(id=${screen.screenId})}" method="post" style="display: inline;">

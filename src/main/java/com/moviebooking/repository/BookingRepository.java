@@ -55,11 +55,11 @@ public class BookingRepository {
                     try {
                         bookingTime = LocalDateTime.parse(p[6], dtFormatter);
                     } catch (DateTimeParseException e) {
-                        // Fallback for incomplete dates
-                        if (p[6].length() == 13) { // For "2025-05-12T19"
+
+                        if (p[6].length() == 13) {
                             bookingTime = LocalDateTime.parse(p[6] + ":00:00", dtFormatter);
                         } else {
-                            bookingTime = LocalDateTime.now(); // Default to now if parsing fails
+                            bookingTime = LocalDateTime.now();
                         }
                     }
 

@@ -54,8 +54,7 @@ public class PaymentRepository {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split("\\|");
-                // Add bounds checking
-                if (parts.length >= 12) { // Ensure we have enough parts
+                if (parts.length >= 12) {
                     payments.add(new Payment(
                             parts[0], parts[1], parts[2], parts[3],
                             parts[4], Double.parseDouble(parts[5]),
@@ -80,8 +79,8 @@ public class PaymentRepository {
                 String.valueOf(payment.getAmount()),
                 payment.getCardNumber(),
                 payment.getCardType(),
-                payment.getCardExpiry(),  // Add this
-                payment.getCardCvc(),    // Add this
+                payment.getCardExpiry(),
+                payment.getCardCvc(),
                 payment.getPaymentTime().format(dtf),
                 payment.getStatus()
         );

@@ -19,15 +19,15 @@ public class PaymentService {
     public Payment processPayment(String userName, String userEmail, String phone,
                                   String bookingId, double amount,
                                   String cardNumber, String cardType,
-                                  String cardExpiry, String cardCvc) {  // Add new parameters
+                                  String cardExpiry, String cardCvc) {
         String paymentId = UUID.randomUUID().toString().substring(0, 8);
         Payment payment = new Payment(
                 paymentId, userName, userEmail, phone,
                 bookingId, amount,
-                cardNumber.substring(cardNumber.length() - 4), // Store only last 4 digits
+                cardNumber.substring(cardNumber.length() - 4),
                 cardType,
-                cardExpiry,      // Add this
-                cardCvc,         // Add this
+                cardExpiry,
+                cardCvc,
                 LocalDateTime.now(),
                 "SUCCESS"
         );
@@ -38,12 +38,6 @@ public class PaymentService {
 
     public List<Payment> getAllPayments() {
         return paymentRepository.findAll();
-    }
-
-    public List<Payment> getPaymentsByUser(String email) {
-        return paymentRepository.findAll().stream()
-                .filter(p -> p.getUserEmail().equalsIgnoreCase(email))
-                .toList();
     }
 
     public Optional<Payment> getPaymentByBookingId(String bookingId) {

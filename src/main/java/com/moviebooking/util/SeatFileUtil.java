@@ -67,7 +67,6 @@ public class SeatFileUtil {
                             long currentTime = Instant.now().getEpochSecond();
 
                             if (currentTime - reservedTime > RESERVATION_TIMEOUT_SECONDS) {
-                                // Reservation expired
                                 available.add(parts[0]);
                                 updatedLines.add(parts[0] + "|available");
                                 needsUpdate = true;
@@ -101,10 +100,6 @@ public class SeatFileUtil {
 
     public synchronized void markSeatAsReserved(String showtimeId, String seat) {
         updateSeatStatus(showtimeId, seat, "reserved:" + Instant.now().getEpochSecond());
-    }
-
-    public synchronized void markSeatAsAvailable(String showtimeId, String seat) {
-        updateSeatStatus(showtimeId, seat, "available");
     }
 
     private void updateSeatStatus(String showtimeId, String seat, String status) {
@@ -145,14 +140,6 @@ public class SeatFileUtil {
             logger.error("Error reading all seats for showtime: " + showtimeId, e);
         }
         return allSeats;
-    }
-
-    public List<String> getBookedSeats(String showtimeId) {
-        return getSeatsByStatus(showtimeId, "booked");
-    }
-
-    public List<String> getReservedSeats(String showtimeId) {
-        return getSeatsByStatus(showtimeId, "reserved");
     }
 
     private List<String> getSeatsByStatus(String showtimeId, String statusPrefix) {

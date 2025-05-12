@@ -10,11 +10,11 @@ public class Payment {
     private String bookingId;
     private double amount;
     private String cardNumber;
-    private String cardExpiry;  // MM/YY format
-    private String cardCvc; // Last 4 digits
-    private String cardType; // Visa, MasterCard, etc.
+    private String cardExpiry;
+    private String cardCvc;
+    private String cardType;
     private LocalDateTime paymentTime;
-    private String status; // SUCCESS, FAILED
+    private String status;
 
     public Payment() {}
 

@@ -128,19 +128,4 @@ public class BookingController {
                 "&showtimeId=" + showtimeId +
                 (error != null ? "&error=" + error : "");
     }
-
-    @GetMapping("/confirmation/{bookingId}")
-    public String showConfirmation(@PathVariable String bookingId, Model model) {
-        Optional<Booking> booking = bookingService.getById(bookingId);
-        Optional<Movie> movie = movieService.getById(booking.get().getMovieId());
-        Optional<Screen> screen = screenService.getById(booking.get().getScreenId());
-        Optional<Theatre> theatre = theatreService.getById(booking.get().getTheaterId());
-        Optional<Showtime> showtime = showtimeService.getById(booking.get().getShowtimeId());
-        model.addAttribute("booking", bookingService.getById(bookingId).orElseThrow());
-        model.addAttribute("movie", movie.get());
-        model.addAttribute("screen", screen.get());
-        model.addAttribute("theatre", theatre.get());
-        model.addAttribute("showtime", showtime.get());
-        return "bookings/confirmation";
-    }
 }

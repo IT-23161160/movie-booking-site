@@ -59,18 +59,14 @@ public class MovieRepository {
     }
 
     public void save(Movie movie, MultipartFile imageFile) throws IOException {
-        // Generate and set movieId (exactly like bookingId generation)
         movie.setMovieId(UUID.randomUUID().toString().substring(0, 6));
 
-        // Handle image file if present
         if (imageFile != null && !imageFile.isEmpty()) {
             String fileName = System.currentTimeMillis() + "_" + imageFile.getOriginalFilename();
             Files.copy(imageFile.getInputStream(), Paths.get(imageUploadDir + fileName),
                     StandardCopyOption.REPLACE_EXISTING);
             movie.setImageName(fileName);
         }
-
-        // Save to file
         try (BufferedWriter writer = Files.newBufferedWriter(movieFile, StandardOpenOption.APPEND)) {
             writer.write(format(movie));
             writer.newLine();
@@ -82,7 +78,6 @@ public class MovieRepository {
         try (BufferedWriter writer = Files.newBufferedWriter(movieFile)) {
             for (Movie m : all) {
                 if (m.getMovieId().equalsIgnoreCase(movieId)) {
-                    // Ensure the movieId stays the same even if title changes
                     updatedMovie.setMovieId(movieId);
                     writer.write(format(updatedMovie));
                 } else {
@@ -117,14 +112,13 @@ public class MovieRepository {
                 String[] parts = line.split("\\|");
                 if (parts.length >= 7) {
                     Movie movie = new Movie(
-                            parts[1], // title
-                            parts[2], // genre
-                            LocalDate.parse(parts[3], formatter), // releaseDate
-                            Integer.parseInt(parts[4]), // duration
-                            parts[5], // imageName
-                            Double.parseDouble(parts[6]) // ticketPrice
+                            parts[1],
+                            parts[2],
+                            LocalDate.parse(parts[3], formatter),
+                            Integer.parseInt(parts[4]),
+                            parts[5]
                     );
-                    movie.setMovieId(parts[0]); // movieId
+                    movie.setMovieId(parts[0]);
                     list.add(movie);
                 }
             }
@@ -141,8 +135,7 @@ public class MovieRepository {
                 m.getGenre(),
                 m.getReleaseDate().format(formatter),
                 String.valueOf(m.getDuration()),
-                m.getImageName(),
-                String.valueOf(m.getTicketPrice())
+                m.getImageName()
         );
     }
 

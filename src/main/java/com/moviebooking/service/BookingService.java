@@ -17,7 +17,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class BookingService {
@@ -39,33 +38,9 @@ public class BookingService {
 
     private final Object seatLock = new Object();
 
-    public Booking createBooking(String showtimeId, String movieId, String theaterId,
-                                 String screenId, String seatNumbers) {
-        synchronized (seatLock) {
-            if (!areSeatsAvailable(showtimeId, seatNumbers)) {
-                throw new IllegalStateException("One or more selected seats are no longer available");
-            }
-
-            String bookingId = UUID.randomUUID().toString().substring(0, 8);
-            LocalDateTime now = LocalDateTime.now();
-
-            Booking booking = new Booking(
-                    bookingId, movieId, theaterId, screenId, showtimeId,
-                    seatNumbers, now
-            );
-
-            Arrays.stream(seatNumbers.split(","))
-                    .forEach(seat -> seatUtil.markSeatAsBooked(showtimeId, seat));
-
-            bookingRepository.save(booking);
-            return booking;
-        }
-    }
-
     public void cancelBooking(String bookingId) {
         Optional<Booking> bookingOpt = bookingRepository.findById(bookingId);
         bookingOpt.ifPresent(booking -> {
-            // Mark seats as available again
             Arrays.stream(booking.getSeatNumber().split(","))
                     .forEach(seat -> markSeatAsAvailable(booking.getShowtimeId(), seat));
 
@@ -78,7 +53,6 @@ public class BookingService {
     }
 
     public List<String> getAllSeats(String showtimeId) {
-        // This method would need to be added to SeatFileUtil
         return seatUtil.getAllSeats(showtimeId);
     }
 
@@ -90,11 +64,6 @@ public class BookingService {
                 .allMatch(seat -> availableSet.contains(seat.trim()));
     }
 
-    public void initializeSeatsForShowtime(String showtimeId, int totalSeats) {
-        seatUtil.initializeSeats(showtimeId, totalSeats);
-    }
-
-    // Helper method to mark seat as available
     private void markSeatAsAvailable(String showtimeId, String seat) {
         String seatFilePath = "data/seats_" + showtimeId + ".txt";
         List<String> updated = new ArrayList<>();
@@ -149,7 +118,7 @@ public class BookingService {
                 throw new IllegalStateException("One or more selected seats are no longer available");
             }
 
-            String bookingId = UUID.randomUUID().toString().substring(0, 8);
+            String bookingId = UUID.randomUUID().toString().substring(0, 6);
             LocalDateTime now = LocalDateTime.now();
 
             Booking booking = new Booking(
@@ -157,11 +126,9 @@ public class BookingService {
                     seatNumbers, now
             );
 
-            // Temporarily mark seats as reserved
             Arrays.stream(seatNumbers.split(","))
                     .forEach(seat -> seatUtil.markSeatAsReserved(showtimeId, seat));
 
-            // Save the reservation
             bookingRepository.save(booking);
             return booking;
         }
@@ -169,11 +136,9 @@ public class BookingService {
 
     public void confirmBooking(Booking booking) {
         synchronized (seatLock) {
-            // Mark seats as booked
             Arrays.stream(booking.getSeatNumber().split(","))
                     .forEach(seat -> seatUtil.markSeatAsBooked(booking.getShowtimeId(), seat));
 
-            // Update booking status if needed
             bookingRepository.save(booking);
         }
     }
