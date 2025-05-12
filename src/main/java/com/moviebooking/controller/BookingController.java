@@ -1,5 +1,9 @@
 package com.moviebooking.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.moviebooking.model.*;
 import com.moviebooking.service.BookingService;
 import com.moviebooking.service.MovieService;
@@ -16,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Optional;
 
 @Controller
@@ -44,14 +49,33 @@ public class BookingController {
         if (!movie.isPresent()) {
             logger.warn("Movie not found with ID: {}", movieId);
             model.addAttribute("error", "Movie not found");
-            return "bookings/select-showtime"; // Return to template with error message
+            return "bookings/select-showtime";
         }
 
-        // If movie exists, add all attributes to model
+        // Get all necessary data
+        List<Theatre> theatres = theatreService.getAll();
+        List<Screen> screens = screenService.getAll();
+        List<Showtime> showtimes = showtimeService.getByMovieId(movieId);
+
+        // Add attributes to model
         model.addAttribute("movie", movie.get());
-        model.addAttribute("theatres", theatreService.getAll());
-        model.addAttribute("screens", screenService.getAll());
-        model.addAttribute("showtimes", showtimeService.getByMovieId(movieId));
+        model.addAttribute("theatres", theatres);
+
+        // Convert collections to JSON for JavaScript processing
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            // Register JavaTimeModule for proper LocalDate/LocalTime serialization
+            mapper.registerModule(new JavaTimeModule());
+            mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+            model.addAttribute("screensJson", mapper.writeValueAsString(screens));
+            model.addAttribute("showtimesJson", mapper.writeValueAsString(showtimes));
+        } catch (JsonProcessingException e) {
+            logger.error("Error converting to JSON", e);
+            // Fallback - template will handle empty data
+            model.addAttribute("screensJson", "[]");
+            model.addAttribute("showtimesJson", "[]");
+        }
 
         return "bookings/select-showtime";
     }
@@ -64,7 +88,6 @@ public class BookingController {
             @RequestParam String showtimeId,
             Model model) {
 
-        // Get and validate all required entities
         Optional<Movie> movie = movieService.getById(movieId);
         Optional<Theatre> theatre = theatreService.getById(theatreId);
         Optional<Screen> screen = screenService.getById(screenId);
@@ -74,14 +97,14 @@ public class BookingController {
             return "redirect:/movies?error=invalid_selection";
         }
 
-        // Initialize seats for this showtime if they don't exist
         seatFileUtil.initializeSeats(showtimeId, screen.get().getTotalSeats());
 
         model.addAttribute("movie", movie.get());
         model.addAttribute("theater", theatre.get());
         model.addAttribute("screen", screen.get());
         model.addAttribute("showtime", showtime.get());
-        model.addAttribute("seats", bookingService.getAvailableSeats(showtimeId));
+        model.addAttribute("allSeats", seatFileUtil.getAllSeats(showtimeId));
+        model.addAttribute("bookedSeats", bookingService.getBookedSeats(showtimeId));
 
         return "bookings/select-seats";
     }
@@ -127,11 +150,6 @@ public class BookingController {
         return "bookings/confirmation";
     }
 
-    @GetMapping("/my")
-    public String myBookings(Model model, @AuthenticationPrincipal User user) {
-        model.addAttribute("bookings", bookingService.getByUser(user.getUsername()));
-        return "bookings/my-bookings";
-    }
 
     @PostMapping("/cancel/{bookingId}")
     public String cancelBooking(@PathVariable String bookingId) {

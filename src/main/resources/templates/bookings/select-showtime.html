@@ -2,32 +2,72 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Select Showtime</title>
+    <meta charset="utf-8" />
     <link rel="stylesheet" th:href="@{/css/globals.css}" />
     <link rel="stylesheet" th:href="@{/css/style.css}" />
     <style>
-        .selection-container {
-            max-width: 800px;
-            margin: 2rem auto;
+        /* Base styles */
+        body {
+            background-color: #0a0a0a;
             color: white;
-            padding: 20px;
-            background-color: rgba(0, 0, 0, 0.7);
-            border-radius: 10px;
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            padding: 0;
         }
 
-        .movie-header {
+        /* Navbar styles */
+        .navbar {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
+            padding: 20px 50px;
+            background-color: rgba(0, 0, 0, 0.8);
             border-bottom: 1px solid #f8ce35;
         }
 
-        .movie-poster-small {
-            width: 100px;
-            height: 150px;
+        .navbar-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #f8ce35;
+        }
+
+        .navbar-links {
+            display: flex;
+            gap: 30px;
+        }
+
+        .navbar-link {
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+            transition: color 0.3s;
+        }
+
+        .navbar-link:hover {
+            color: #f8ce35;
+        }
+
+        .navbar-link.active {
+            color: #f8ce35;
+            font-weight: bold;
+        }
+
+        /* Movie header */
+        .movie-header {
+            display: flex;
+            align-items: center;
+            padding: 30px 50px;
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.9));
+            border-bottom: 1px solid #333;
+        }
+
+        .movie-poster {
+            width: 150px;
+            height: 225px;
             object-fit: cover;
-            margin-right: 20px;
             border-radius: 5px;
+            margin-right: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
 
         .movie-info {
@@ -35,29 +75,53 @@
         }
 
         .movie-title {
-            font-size: 24px;
+            font-size: 28px;
             color: #f8ce35;
-            margin-bottom: 5px;
+            margin: 0 0 10px 0;
         }
 
-        .movie-details {
+        .movie-meta {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
             color: #aaa;
-            font-size: 14px;
+            font-size: 16px;
         }
 
-        .selection-section {
+        .movie-description {
+            color: #ddd;
+            line-height: 1.5;
+            max-width: 800px;
+        }
+
+        /* Main content container */
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        /* Selection card styles */
+        .selection-card {
+            background-color: rgba(20, 20, 20, 0.9);
+            border-radius: 10px;
+            padding: 30px;
             margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
         }
 
         .section-title {
             color: #f8ce35;
-            margin-bottom: 15px;
-            font-size: 18px;
+            font-size: 22px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333;
         }
 
+        /* Option grid styles */
         .option-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 15px;
         }
 
@@ -72,8 +136,8 @@
 
         .option-label {
             display: block;
-            background: rgba(0,0,0,0.5);
-            border: 1px solid #f8ce35;
+            background-color: rgba(30, 30, 30, 0.7);
+            border: 1px solid #444;
             color: white;
             padding: 15px;
             border-radius: 5px;
@@ -83,8 +147,9 @@
         }
 
         .option-input:checked + .option-label {
-            background: rgba(248,206,53,0.3);
-            border-color: gold;
+            background-color: rgba(248, 206, 53, 0.2);
+            border-color: #f8ce35;
+            color: #f8ce35;
         }
 
         .option-input:disabled + .option-label {
@@ -92,6 +157,24 @@
             cursor: not-allowed;
         }
 
+        /* Showtime specific styles */
+        .showtime-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .showtime-date {
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .showtime-time {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* Action button */
         .next-btn {
             background: #f8ce35;
             color: black;
@@ -114,95 +197,225 @@
             margin-top: 5px;
             font-size: 14px;
         }
+
+        /* Admin button */
+        .admin-button {
+            position: fixed;
+            right: 30px;
+            bottom: 30px;
+            background-color: #f8ce35;
+            color: #000;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .admin-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(248, 206, 53, 0.7);
+        }
+
+        /* Hidden sections */
+        .hidden-section {
+            display: none;
+        }
+
+        /* Loading message */
+        .loading-message {
+            text-align: center;
+            color: #aaa;
+            font-style: italic;
+            padding: 20px;
+        }
     </style>
 </head>
 <body>
-<div class="homepage">
-    <div class="div">
-        <!-- Navbar -->
-        <div class="navbar">
-            <div class="text-wrapper">MOVIES</div>
-            <div class="text-wrapper-2"><button onclick="window.location.href='/movies';">HOME</button></div>
-            <div class="text-wrapper-3"><button onclick="window.location.href='/movies';">MOVIES</button></div>
-            <div class="text-wrapper-4"><button onclick="window.location.href='/buy';">BUY TICKETS</button></div>
-        </div>
+<!-- Navbar -->
+<nav class="navbar">
+    <div class="navbar-title">MOVIES</div>
+    <div class="navbar-links">
+        <a href="/movies" class="navbar-link">HOME</a>
+        <a href="/movies" class="navbar-link active">MOVIES</a>
+        <a href="/buy" class="navbar-link">BUY TICKETS</a>
+    </div>
+</nav>
 
-        <!-- Main Content -->
-        <div class="selection-container">
-            <!-- Movie Header -->
-            <div class="movie-header">
-                <img th:src="@{'/uploads/images/' + ${movie.imageName}}" class="movie-poster-small" alt="Movie poster">
-                <div class="movie-info">
-                    <h1 class="movie-title" th:text="${movie.title}"></h1>
-                    <div class="movie-details">
-                        <span th:text="${movie.genre}"></span> |
-                        <span th:text="${movie.duration + ' min'}"></span> |
-                        <span th:text="${#temporals.format(movie.releaseDate, 'yyyy')}"></span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Selection Form -->
-            <form th:action="@{/bookings/select-seats}" method="get" id="showtime-form">
-                <input type="hidden" name="movieId" th:value="${movie.movieId}">
-
-                <!-- Theatre Selection -->
-                <div class="selection-section">
-                    <h2 class="section-title">1. Select Theatre</h2>
-                    <div class="option-grid">
-                        <div th:each="theatre : ${theatres}" class="option-item">
-                            <input type="radio" th:id="${'theatre-' + theatre.theatreId}"
-                                   name="theatreId" th:value="${theatre.theatreId}"
-                                   class="option-input" required
-                                   th:onchange="updateAvailableScreensAndShowtimes()">
-                            <label th:for="${'theatre-' + theatre.theatreId}" class="option-label"
-                                   th:text="${theatre.name}"></label>
-                        </div>
-                    </div>
-                    <div id="theatre-error" class="error-message"></div>
-                </div>
-
-                <!-- Screen Selection -->
-                <div class="selection-section">
-                    <h2 class="section-title">2. Select Screen</h2>
-                    <div class="option-grid" id="screen-options">
-                        <div th:each="screen : ${screens}" class="option-item">
-                            <input type="radio" th:id="${'screen-' + screen.screenId}"
-                                   name="screenId" th:value="${screen.screenId}"
-                                   class="option-input" required
-                                   th:onchange="updateAvailableShowtimes()">
-                            <label th:for="${'screen-' + screen.screenId}" class="option-label"
-                                   th:text="${screen.screenName}"></label>
-                        </div>
-                    </div>
-                    <div id="screen-error" class="error-message"></div>
-                </div>
-
-                <!-- Showtime Selection -->
-                <div class="selection-section">
-                    <h2 class="section-title">3. Select Showtime</h2>
-                    <div class="option-grid" id="showtime-options">
-                        <div th:each="showtime : ${showtimes}" class="option-item">
-                            <input type="radio" th:id="${'showtime-' + showtime.showtimeId}"
-                                   name="showtimeId" th:value="${showtime.showtimeId}"
-                                   class="option-input" required>
-                            <label th:for="${'showtime-' + showtime.showtimeId}" class="option-label">
-                                <span th:text="${#temporals.format(showtime.date, 'MMM dd')}"></span><br>
-                                <span th:text="${#temporals.format(showtime.time, 'HH:mm')}"></span>
-                            </label>
-                        </div>
-                    </div>
-                    <div id="showtime-error" class="error-message"></div>
-                </div>
-
-                <div style="clear: both;"></div>
-                <button type="submit" class="next-btn" id="next-btn">Select Seats</button>
-            </form>
+<!-- Movie Header -->
+<div class="movie-header">
+    <img th:src="@{'/uploads/images/' + ${movie.imageName}}" class="movie-poster" alt="Movie poster">
+    <div class="movie-info">
+        <h1 class="movie-title" th:text="${movie.title}">Movie Title</h1>
+        <div class="movie-meta">
+            <span th:text="${movie.genre}">Action</span> |
+            <span th:text="${movie.duration + ' min'}">120 min</span> |
+            <span th:text="${#temporals.format(movie.releaseDate, 'yyyy')}">2023</span>
         </div>
     </div>
 </div>
 
-<script>
+<!-- Main Content -->
+<div class="container">
+    <!-- Selection Form -->
+    <form th:action="@{/bookings/select-seats}" method="get" id="showtime-form">
+        <input type="hidden" name="movieId" th:value="${movie.movieId}">
+
+        <!-- Theatre Selection -->
+        <div class="selection-card">
+            <h2 class="section-title">1. Select Theatre</h2>
+            <div class="option-grid">
+                <div th:each="theatre : ${theatres}" class="option-item">
+                    <input type="radio" th:id="${'theatre-' + theatre.theatreId}"
+                           name="theatreId" th:value="${theatre.theatreId}"
+                           class="option-input" required
+                           onclick="handleTheatreSelection(this.value)">
+                    <label th:for="${'theatre-' + theatre.theatreId}" class="option-label"
+                           th:text="${theatre.name}">Theatre Name</label>
+                </div>
+            </div>
+            <div id="theatre-error" class="error-message"></div>
+        </div>
+
+        <!-- Screen Selection - Initially hidden -->
+        <div class="selection-card hidden-section" id="screen-section">
+            <h2 class="section-title">2. Select Screen</h2>
+            <div class="option-grid" id="screen-options">
+                <div class="loading-message">Select a theatre to see available screens</div>
+            </div>
+            <div id="screen-error" class="error-message"></div>
+        </div>
+
+        <!-- Showtime Selection - Initially hidden -->
+        <div class="selection-card hidden-section" id="showtime-section">
+            <h2 class="section-title">3. Select Showtime</h2>
+            <div class="option-grid" id="showtime-options">
+                <div class="loading-message">Select a screen to see available showtimes</div>
+            </div>
+            <div id="showtime-error" class="error-message"></div>
+        </div>
+
+        <div style="clear: both;"></div>
+        <button type="submit" class="next-btn hidden-section" id="next-btn">Select Seats</button>
+    </form>
+</div>
+
+<!-- Admin Button -->
+<a href="/admin" class="admin-button">⚙️</a>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    // Store all data from server
+    const allData = {
+        screens: /*[[${screensJson}]]*/ [],
+        showtimes: /*[[${showtimesJson}]]*/ [],
+        movieId: /*[[${movie.movieId}]]*/ ''
+    };
+    /*]]>*/
+
+    function handleTheatreSelection(theatreId) {
+        // Show loading state
+        document.getElementById('screen-options').innerHTML = '<div class="loading-message">Loading screens...</div>';
+
+        // Show screen section
+        document.getElementById('screen-section').classList.remove('hidden-section');
+
+        // Hide showtime section and next button
+        document.getElementById('showtime-section').classList.add('hidden-section');
+        document.getElementById('next-btn').classList.add('hidden-section');
+
+        // Filter screens for selected theatre
+        const screensForTheatre = allData.screens.filter(screen => screen.theatreId === theatreId);
+
+        // Populate screen options
+        const screenOptions = document.getElementById('screen-options');
+        screenOptions.innerHTML = '';
+
+        if (screensForTheatre.length === 0) {
+            screenOptions.innerHTML = '<div class="loading-message">No screens available for this theatre</div>';
+            return;
+        }
+
+        screensForTheatre.forEach(screen => {
+            const optionItem = document.createElement('div');
+            optionItem.className = 'option-item';
+            optionItem.innerHTML = `
+                <input type="radio" id="screen-${screen.screenId}"
+                       name="screenId" value="${screen.screenId}"
+                       class="option-input" required
+                       onclick="handleScreenSelection(this.value)">
+                <label for="screen-${screen.screenId}" class="option-label">
+                    ${screen.screenName}
+                </label>
+            `;
+            screenOptions.appendChild(optionItem);
+        });
+    }
+
+    function handleScreenSelection(screenId) {
+        // Show loading state
+        document.getElementById('showtime-options').innerHTML = '<div class="loading-message">Loading showtimes...</div>';
+
+        // Show showtime section
+        document.getElementById('showtime-section').classList.remove('hidden-section');
+
+        // Get selected theatre
+        const theatreId = document.querySelector('input[name="theatreId"]:checked').value;
+
+        // Filter showtimes for selected theatre, screen and movie
+        const showtimesForSelection = allData.showtimes.filter(showtime =>
+            showtime.theatreId === theatreId &&
+            showtime.screenId === screenId &&
+            showtime.movieId === allData.movieId
+        );
+
+        // Populate showtime options
+        const showtimeOptions = document.getElementById('showtime-options');
+        showtimeOptions.innerHTML = '';
+
+        if (showtimesForSelection.length === 0) {
+            showtimeOptions.innerHTML = '<div class="loading-message">No showtimes available for this screen</div>';
+            document.getElementById('showtime-error').textContent = '';
+            return;
+        }
+
+        showtimesForSelection.forEach(showtime => {
+            const optionItem = document.createElement('div');
+            optionItem.className = 'option-item';
+
+            // Format date and time
+            const date = new Date(showtime.date);
+            const timeParts = showtime.time.split(':');
+            const hours = parseInt(timeParts[0]);
+            const minutes = timeParts[1];
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            const hours12 = hours % 12 || 12;
+            const formattedTime = `${hours12}:${minutes} ${ampm}`;
+
+            optionItem.innerHTML = `
+                <input type="radio" id="showtime-${showtime.showtimeId}"
+                       name="showtimeId" value="${showtime.showtimeId}"
+                       class="option-input" required
+                       onchange="enableNextButton()">
+                <label for="showtime-${showtime.showtimeId}" class="option-label showtime-label">
+                    <span class="showtime-date">${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                    <span class="showtime-time">${formattedTime}</span>
+                </label>
+            `;
+            showtimeOptions.appendChild(optionItem);
+        });
+    }
+
+    function enableNextButton() {
+        document.getElementById('next-btn').classList.remove('hidden-section');
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         // Form validation
         const form = document.getElementById('showtime-form');
@@ -237,19 +450,9 @@
 
             if (!isValid) {
                 e.preventDefault();
-                nextBtn.disabled = false;
             }
         });
     });
-
-    // These functions would be implemented with AJAX calls in a real application
-    function updateAvailableScreensAndShowtimes() {
-        // Implementation would fetch screens based on selected theatre
-    }
-
-    function updateAvailableShowtimes() {
-        // Implementation would fetch showtimes based on selected screen
-    }
 </script>
 </body>
 </html>

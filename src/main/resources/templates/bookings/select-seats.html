@@ -5,43 +5,102 @@
     <link rel="stylesheet" th:href="@{/css/globals.css}" />
     <link rel="stylesheet" th:href="@{/css/style.css}" />
     <style>
-        .booking-container {
-            max-width: 800px;
-            margin: 2rem auto;
+        /* Base styles */
+        body {
+            background-color: #0a0a0a;
             color: white;
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            padding: 0;
         }
-        .movie-theater-info {
+
+        /* Navbar styles */
+        .navbar {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-            gap: 1rem;
+            align-items: center;
+            padding: 20px 50px;
+            background-color: rgba(0, 0, 0, 0.8);
+            border-bottom: 1px solid #f8ce35;
         }
-        .movie-info, .theater-info {
+
+        .navbar-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #f8ce35;
+        }
+
+        .navbar-links {
+            display: flex;
+            gap: 30px;
+        }
+
+        .navbar-link {
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+            transition: color 0.3s;
+        }
+
+        .navbar-link:hover {
+            color: #f8ce35;
+        }
+
+        .navbar-link.active {
+            color: #f8ce35;
+            font-weight: bold;
+        }
+
+        /* Movie header */
+        .movie-header {
             display: flex;
             align-items: center;
-            min-width: 300px;
+            padding: 30px 50px;
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.9));
+            border-bottom: 1px solid #333;
         }
+
         .movie-poster-small {
-            width: 60px;
-            height: 90px;
+            width: 150px;
+            height: 225px;
             object-fit: cover;
-            margin-right: 1rem;
             border-radius: 5px;
-            background-color: #2d3748;
+            margin-right: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
+
+        .movie-info {
+            flex: 1;
+        }
+
         .movie-title {
-            font-weight: bold;
-            font-size: 1.2rem;
+            font-size: 28px;
+            color: #f8ce35;
+            margin: 0 0 10px 0;
         }
-        .theater-name {
-            font-weight: bold;
-            font-size: 1.2rem;
+
+        .movie-meta {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            color: #aaa;
+            font-size: 16px;
         }
-        .showtime-info {
-            color: #a0a0a0;
-            font-size: 0.9rem;
+
+        .movie-description {
+            color: #ddd;
+            line-height: 1.5;
+            max-width: 800px;
         }
+
+        /* Main content container */
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        /* Screen display */
         .screen-display {
             background: #4b4b4b;
             color: white;
@@ -51,35 +110,100 @@
             margin: 2rem auto;
             width: 80%;
         }
+
+        /* Seat legend */
+        .seat-legend {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+        }
+
+        /* Seat grid */
         .seat-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+            grid-template-columns: repeat(10, 1fr);
             gap: 0.5rem;
             margin: 2rem auto;
             width: 100%;
-            max-width: 400px;
+            max-width: 500px;
         }
+
         .seat {
             width: 40px;
             height: 40px;
-            background: #4a5568;
             border-radius: 5px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             transition: all 0.2s ease;
+            font-size: 0.8rem;
         }
+
+        .seat.available {
+            background: #4a5568;
+        }
+
         .seat.selected {
             background: #f8ce35;
             color: black;
             transform: scale(1.05);
         }
+
         .seat.booked {
             background: #e53e3e;
             cursor: not-allowed;
             opacity: 0.7;
         }
+
+        /* Customer info */
+        .customer-info {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(0,0,0,0.2);
+            border-radius: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #f8ce35;
+        }
+
+        .form-group input {
+            padding: 0.5rem;
+            border-radius: 5px;
+            border: 1px solid #4a5568;
+            width: 100%;
+            max-width: 300px;
+            background: #2d3748;
+            color: white;
+        }
+
+        /* Selection info */
+        .selection-info {
+            clear: both;
+            padding-top: 1rem;
+        }
+
+        /* Confirm button */
         .confirm-btn {
             background: #f8ce35;
             color: black;
@@ -90,44 +214,23 @@
             float: right;
             cursor: pointer;
             transition: all 0.2s ease;
+            font-weight: bold;
         }
+
         .confirm-btn:hover {
             background: #e6b800;
             box-shadow: 0 0 10px rgba(248, 206, 53, 0.5);
         }
+
         .confirm-btn:disabled {
             background: #6b7280;
             cursor: not-allowed;
         }
-        .selection-info {
-            clear: both;
-            padding-top: 2rem;
-        }
-        .selection-info label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: #f8ce35;
-        }
-        .selection-info input {
-            padding: 0.5rem;
-            border-radius: 5px;
-            border: 1px solid #4a5568;
-            width: 100%;
-            max-width: 300px;
-            margin-bottom: 1rem;
-            background: #2d3748;
-            color: white;
-        }
+
+        /* Error message */
         .error-message {
             color: #ef4444;
             margin-top: 1rem;
-        }
-
-        .customer-info {
-            margin-top: 1rem;
-            padding: 1rem;
-            background: rgba(0,0,0,0.2);
-            border-radius: 5px;
         }
     </style>
 </head>
@@ -143,7 +246,7 @@
                          alt="Movie poster">
                     <div>
                         <div class="movie-title" th:text="${movie?.title ?: 'Movie'}"></div>
-                        <div class="showtime-info">
+                        <div class="movie-meta">
                             <span th:text="${movie?.duration ?: '0'} + ' min'"></span>
                             <span th:if="${movie?.genre != null}" th:text="' | ' + ${movie.genre}"></span>
                         </div>
@@ -166,6 +269,22 @@
 
             <div class="screen-display">SCREEN</div>
 
+            <!-- Seat Legend -->
+            <div class="seat-legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #4a5568;"></div>
+                    <span>Available</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #f8ce35;"></div>
+                    <span>Selected</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #e53e3e;"></div>
+                    <span>Booked</span>
+                </div>
+            </div>
+
             <form th:action="@{/bookings/confirm}" method="post" id="booking-form">
                 <!-- Hidden Fields -->
                 <input type="hidden" name="movieId" th:value="${movie?.movieId}">
@@ -175,11 +294,12 @@
                 <input type="hidden" name="seatNumber" id="seatNumberInput">
 
                 <!-- Seat Selection Grid -->
-                <div class="seat-grid" th:if="${seats != null and not #lists.isEmpty(seats)}">
-                    <div th:each="seat : ${seats}"
+                <div class="seat-grid">
+                    <div th:each="seat : ${allSeats}"
                          class="seat"
+                         th:classappend="${bookedSeats.contains(seat)} ? 'booked' : 'available'"
                          th:text="${seat}"
-                         onclick="toggleSeat(this)"></div>
+                         th:onclick="${bookedSeats.contains(seat)} ? '' : 'toggleSeat(this)'"></div>
                 </div>
 
                 <!-- Customer Information -->
@@ -194,6 +314,7 @@
                     </div>
                     <div class="selection-info">
                         <p>Selected Seats: <span id="selected-seats">None</span></p>
+                        <p>Total Price: <span id="total-price">0.00</span></p>
                     </div>
                 </div>
 
@@ -205,6 +326,7 @@
 
 <script>
     let selectedSeats = [];
+    const ticketPrice = [[${movie?.ticketPrice ?: 0}]];
 
     function toggleSeat(element) {
         const seat = element.textContent;
@@ -213,9 +335,11 @@
         if (index === -1) {
             selectedSeats.push(seat);
             element.classList.add('selected');
+            element.classList.remove('available');
         } else {
             selectedSeats.splice(index, 1);
             element.classList.remove('selected');
+            element.classList.add('available');
         }
 
         updateSelectionDisplay();
@@ -223,23 +347,26 @@
 
     function updateSelectionDisplay() {
         const display = document.getElementById('selected-seats');
+        const totalPriceDisplay = document.getElementById('total-price');
         const confirmBtn = document.getElementById('confirm-btn');
         const seatNumberInput = document.getElementById('seatNumberInput');
         const emailInput = document.getElementById('customerEmail');
         const nicInput = document.getElementById('nic');
 
-        if (selectedSeats.length > 0 &&
-            emailInput.value.trim() !== '' &&
-            nicInput.value.trim() !== '') {
-
+        if (selectedSeats.length > 0) {
             display.textContent = selectedSeats.join(', ');
             seatNumberInput.value = selectedSeats.join(',');
-            confirmBtn.disabled = false;
+            totalPriceDisplay.textContent = (selectedSeats.length * ticketPrice).toFixed(2);
         } else {
             display.textContent = 'None';
             seatNumberInput.value = '';
-            confirmBtn.disabled = true;
+            totalPriceDisplay.textContent = '0.00';
         }
+
+        // Enable confirm button only if seats are selected and form is valid
+        confirmBtn.disabled = !(selectedSeats.length > 0 &&
+            emailInput.value.trim() !== '' &&
+            nicInput.value.trim() !== '');
     }
 
     // Add event listeners for form validation
