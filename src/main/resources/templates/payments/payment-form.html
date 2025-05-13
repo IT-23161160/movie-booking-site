@@ -141,6 +141,18 @@
         .card-icon.active {
             opacity: 1;
         }
+        .small-italic {
+            font-size: 0.85em;
+            font-style: italic;
+            color: #666;
+        }
+        .booking-detail {
+            margin-bottom: 8px;
+        }
+        strong {
+            display: inline-block;
+            min-width: 120px;
+        }
 
         @media (max-width: 768px) {
             .card-details-row {
@@ -161,13 +173,13 @@
         </div>
         <div class="booking-detail">
             <strong>Seats Reserved:</strong>
-            <span th:text="${booking.seatNumber}"></span>
-            (<span th:text="${#lists.size(#strings.listSplit(booking.seatNumber, ','))}"></span> seats)
+            <span th:text="${#strings.replace(booking.seatNumber, ',', ', ')}"></span>
+            <span class="small-italic" th:text="' ' + ${#lists.size(#strings.listSplit(booking.seatNumber, ','))} + '-seats'"></span>
         </div>
         <div class="booking-detail">
             <strong>Total Amount:</strong>
-            <span th:text="${#numbers.formatDecimal(#lists.size(#strings.listSplit(booking.seatNumber, ',')) * screen.ticketPrice, 1, 2)}"></span> Lkr
-            ( Lkr<span th:text="${#numbers.formatDecimal(screen.ticketPrice, 1, 2)}"></span> per seat)
+            <span th:text="${#numbers.formatDecimal(#lists.size(#strings.listSplit(booking.seatNumber, ',')) * screen.ticketPrice, 1, 2) + ' Lkr'}"></span>
+            <span class="small-italic" th:text="' *' + ${#numbers.formatDecimal(screen.ticketPrice, 1, 2) + ' Lkr per seat'}"></span>
         </div>
     </div>
 

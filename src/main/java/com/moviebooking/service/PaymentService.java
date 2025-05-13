@@ -25,9 +25,9 @@ public class PaymentService {
                 paymentId, userName, userEmail, phone,
                 bookingId, amount,
                 cardNumber.substring(cardNumber.length() - 4),
-                cardType,
                 cardExpiry,
                 cardCvc,
+                cardType,
                 LocalDateTime.now(),
                 "SUCCESS"
         );

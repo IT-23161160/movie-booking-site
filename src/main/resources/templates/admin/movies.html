@@ -213,7 +213,6 @@
                     <th>Genre</th>
                     <th>Release Date</th>
                     <th>Duration</th>
-                    <th>Price</th>
                     <th>Actions</th>
                 </tr>
                 </thead>
@@ -227,7 +226,6 @@
                     <td th:text="${movie.genre}"></td>
                     <td th:text="${#temporals.format(movie.releaseDate, 'yyyy-MM-dd')}"></td>
                     <td th:text="${movie.duration + 'm'}"></td>
-                    <td th:text="${'$' + #numbers.formatDecimal(movie.ticketPrice, 1, 2)}"></td>
                     <td>
                         <a th:href="@{'/movies/edit/' + ${movie.movieId}}" class="action-btn edit-btn">EDIT</a>
                         <form th:action="@{'/movies/delete/' + ${movie.movieId}}" method="post" style="display: inline;">

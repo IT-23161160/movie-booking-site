@@ -365,7 +365,7 @@
                 <div class="selection-confirm-container">
                     <div class="selection-info">
                         <p>Selected Seats: <span id="selected-seats">None</span></p>
-                        <p>Total Price: $<span id="total-price">0.00</span></p>
+                        <p>Total Price: <span id="total-price">0.00 Lkr</span></p>
                     </div>
                     <button type="submit" class="confirm-btn" id="confirm-btn" disabled>Confirm Booking</button>
                 </div>
@@ -376,7 +376,7 @@
 
 <script>
     let selectedSeats = [];
-    const ticketPrice = [[${movie?.ticketPrice ?: 0}]];
+    const ticketPrice = [[${screen?.ticketPrice ?: 0}]];
 
     function toggleSeat(element) {
         const seat = element.textContent;

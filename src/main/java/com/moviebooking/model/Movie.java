@@ -35,7 +35,6 @@ public class Movie {
 
     public void setTitle(String title) {
         this.title = title;
-        this.movieId = title.substring(0, Math.min(title.length(), 6)).toUpperCase();
     }
 
     public String getGenre() {
@@ -69,6 +68,4 @@ public class Movie {
     public void setImageName(String imageName) {
         this.imageName = imageName;
     }
-
-
 }

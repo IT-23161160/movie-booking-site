@@ -78,9 +78,9 @@ public class PaymentRepository {
                 payment.getBookingId(),
                 String.valueOf(payment.getAmount()),
                 payment.getCardNumber(),
-                payment.getCardType(),
                 payment.getCardExpiry(),
                 payment.getCardCvc(),
+                payment.getCardType(),
                 payment.getPaymentTime().format(dtf),
                 payment.getStatus()
         );

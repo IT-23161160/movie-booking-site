@@ -59,17 +59,23 @@ public class MovieRepository {
     }
 
     public void save(Movie movie, MultipartFile imageFile) throws IOException {
-        movie.setMovieId(UUID.randomUUID().toString().substring(0, 6));
+        try {
+            movie.setMovieId(UUID.randomUUID().toString().substring(0, 6));
 
-        if (imageFile != null && !imageFile.isEmpty()) {
-            String fileName = System.currentTimeMillis() + "_" + imageFile.getOriginalFilename();
-            Files.copy(imageFile.getInputStream(), Paths.get(imageUploadDir + fileName),
-                    StandardCopyOption.REPLACE_EXISTING);
-            movie.setImageName(fileName);
-        }
-        try (BufferedWriter writer = Files.newBufferedWriter(movieFile, StandardOpenOption.APPEND)) {
-            writer.write(format(movie));
-            writer.newLine();
+            if (imageFile != null && !imageFile.isEmpty()) {
+                String fileName = System.currentTimeMillis() + "_" + imageFile.getOriginalFilename();
+                Path destination = Paths.get(imageUploadDir + fileName);
+                Files.copy(imageFile.getInputStream(), destination, StandardCopyOption.REPLACE_EXISTING);
+                movie.setImageName(fileName);
+            }
+
+            try (BufferedWriter writer = Files.newBufferedWriter(movieFile,
+                    StandardOpenOption.APPEND, StandardOpenOption.CREATE)) {
+                writer.write(format(movie));
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            throw new IOException("Failed to save movie: " + e.getMessage(), e);
         }
     }
 
@@ -106,11 +112,15 @@ public class MovieRepository {
 
     private List<Movie> loadAll() {
         List<Movie> list = new ArrayList<>();
-        try (BufferedReader reader = Files.newBufferedReader(movieFile)) {
-            String line;
-            while ((line = reader.readLine()) != null) {
+        try {
+            if (!Files.exists(movieFile)){
+                return list;
+            }
+
+            List<String> lines = Files.readAllLines(movieFile);
+            for (String line : lines) {
                 String[] parts = line.split("\\|");
-                if (parts.length >= 7) {
+                if (parts.length >= 6) {
                     Movie movie = new Movie(
                             parts[1],
                             parts[2],
@@ -123,7 +133,7 @@ public class MovieRepository {
                 }
             }
         } catch (IOException e) {
-            // Ignore if file doesn't exist
+            System.err.println("Error loading movies: " + e.getMessage());
         }
         return list;
     }

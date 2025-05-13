@@ -49,21 +49,21 @@ public class TicketPdfService {
             table.setSpacingBefore(10);
             table.setSpacingAfter(10);
 
-            addTableRow(table, "Movie:", movie.getTitle());
-            addTableRow(table, "Theater:", theatre.getLocation());
-            addTableRow(table, "Screen:", screen.getScreenName());
-            addTableRow(table, "Date:", showtime.getDate().toString());
-            addTableRow(table, "Time:", showtime.getTime().format(DateTimeFormatter.ofPattern("HH:mm")));
-            addTableRow(table, "Seats:", booking.getSeatNumber());
-            addTableRow(table, "Booking ID:", booking.getBookingId());
+            addTableRow(table, "Movie: ", movie.getTitle());
+            addTableRow(table, "Theater: ",theatre.getName()+", " + theatre.getLocation());
+            addTableRow(table, "Screen: ", screen.getScreenName());
+            addTableRow(table, "Date: ", showtime.getDate().toString());
+            addTableRow(table, "Time: ", showtime.getTime().format(DateTimeFormatter.ofPattern("HH:mm")));
+            addTableRow(table, "Seats: ", booking.getSeatNumber());
+            addTableRow(table, "Booking ID: ", booking.getBookingId());
 
-            addTableRow(table, "Payment ID:", payment.getPaymentId());
-            addTableRow(table, "Amount:", "$" + String.format("%.2f", payment.getAmount()));
-            addTableRow(table, "Payment Method:", payment.getCardType() + " ****" + payment.getCardNumber());
+            addTableRow(table, "Payment ID: ", payment.getPaymentId());
+            addTableRow(table, "Amount: ", String.format("%.2f", payment.getAmount())+ " Lkr");
+            addTableRow(table, "Payment Method: ", payment.getCardType() + " ****" + payment.getCardNumber());
 
             document.add(table);
 
-            Paragraph thanks = new Paragraph("Enjoy the show!",
+            Paragraph thanks = new Paragraph("Enjoy the Movie!",
                     FontFactory.getFont(FontFactory.HELVETICA, 12));
             thanks.setAlignment(Element.ALIGN_CENTER);
             thanks.setSpacingBefore(20);
