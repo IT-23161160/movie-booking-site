@@ -29,8 +29,97 @@ public class BookingRepository {
     private final Path bookingFile = Paths.get(filePath);
     private final DateTimeFormatter dtFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
+    private final BookingQueue bookingQueue = new BookingQueue();
+    private volatile boolean isWriterRunning = false;
+
     public BookingRepository() {
         ensureFileExists();
+        startQueueProcessor();
+    }
+
+    private static class BookingNode {
+        Booking booking;
+        BookingNode next;
+
+        BookingNode(Booking booking) {
+            this.booking = booking;
+            this.next = null;
+        }
+    }
+
+    private static class BookingQueue {
+        private BookingNode head;
+        private BookingNode tail;
+        private int size;
+
+        public BookingQueue() {
+            head = null;
+            tail = null;
+            size = 0;
+        }
+
+        public synchronized void enqueue(Booking booking) {
+            BookingNode newNode = new BookingNode(booking);
+            if (tail == null) {
+                head = tail = newNode;
+            } else {
+                tail.next = newNode;
+                tail = newNode;
+            }
+            size++;
+            notifyAll();
+        }
+
+        public synchronized Booking dequeue() throws InterruptedException {
+            while (isEmpty()) {
+                wait();
+            }
+            BookingNode temp = head;
+            head = head.next;
+            if (head == null) {
+                tail = null;
+            }
+            size--;
+            return temp.booking;
+        }
+
+        public synchronized boolean isEmpty() {
+            return head == null;
+        }
+
+        public synchronized int size() {
+            return size;
+        }
+    }
+
+
+    private void startQueueProcessor() {
+        Thread writerThread = new Thread(() -> {
+            isWriterRunning = true;
+            while (isWriterRunning || !bookingQueue.isEmpty()) {
+                try {
+                    Booking booking = bookingQueue.dequeue();
+                    writeBookingToFile(booking);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    logger.error("Queue processor thread interrupted", e);
+                } catch (Exception e) {
+                    logger.error("Error processing booking from queue", e);
+                }
+            }
+        });
+        writerThread.setDaemon(true);
+        writerThread.start();
+    }
+
+
+    private synchronized void writeBookingToFile(Booking booking) {
+        try (BufferedWriter writer = Files.newBufferedWriter(bookingFile, StandardOpenOption.APPEND)) {
+            writer.write(format(booking));
+            writer.newLine();
+        } catch (IOException e) {
+            logger.error("Error writing booking to file", e);
+        }
     }
 
     private void ensureFileExists() {
@@ -55,7 +144,6 @@ public class BookingRepository {
                     try {
                         bookingTime = LocalDateTime.parse(p[6], dtFormatter);
                     } catch (DateTimeParseException e) {
-
                         if (p[6].length() == 13) {
                             bookingTime = LocalDateTime.parse(p[6] + ":00:00", dtFormatter);
                         } else {
@@ -83,12 +171,7 @@ public class BookingRepository {
     }
 
     public void save(Booking booking) {
-        try (BufferedWriter writer = Files.newBufferedWriter(bookingFile, StandardOpenOption.APPEND)) {
-            writer.write(format(booking));
-            writer.newLine();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        bookingQueue.enqueue(booking);
     }
 
     public void delete(String bookingId) {
@@ -121,5 +204,12 @@ public class BookingRepository {
                 b.getSeatNumber(),
                 b.getBookingTime().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
         );
+    }
+
+    public void shutdown() {
+        isWriterRunning = false;
+        synchronized (bookingQueue) {
+            bookingQueue.notifyAll();
+        }
     }
 }
